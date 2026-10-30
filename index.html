@@ -1,0 +1,1941 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ÔN TẬP GKI - SINH HỌC 10 | By YingSeo</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Thư viện JSZip giải nén trực tiếp file .docx để lấy hình ảnh và khớp câu hỏi -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <!-- Thư viện Canvas Confetti tạo hiệu ứng pháo hoa / mưa sao theo mức điểm -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; overflow-x: hidden; }
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    .glass-panel { background: rgba(255, 255, 255, 0.98); backdrop-filter: blur(16px); }
+    .exam-img { max-height: 290px; width: auto; object-fit: contain; border-radius: 0.85rem; transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1); }
+    .exam-img:hover { transform: scale(1.03); }
+
+    /* ==================== ANIMATIONS CHO CÁC Ô & KẾT QUẢ THEO ĐIỂM ==================== */
+    @keyframes fadeSlideUp {
+      0% { opacity: 0; transform: translateY(20px) scale(0.985); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    @keyframes popSelect {
+      0% { transform: scale(1); }
+      45% { transform: scale(1.025); }
+      100% { transform: scale(1); }
+    }
+    @keyframes rainbowGlow {
+      0% { box-shadow: 0 0 25px rgba(245, 158, 11, 0.35), 0 0 50px rgba(79, 70, 229, 0.25); border-color: #f59e0b; }
+      50% { box-shadow: 0 0 35px rgba(16, 185, 129, 0.45), 0 0 65px rgba(236, 72, 153, 0.3); border-color: #10b981; }
+      100% { box-shadow: 0 0 25px rgba(245, 158, 11, 0.35), 0 0 50px rgba(79, 70, 229, 0.25); border-color: #f59e0b; }
+    }
+    @keyframes floatTrophy {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-6px) rotate(4deg); }
+    }
+    @keyframes shimmerSweep {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+
+    .category-card {
+      animation: fadeSlideUp 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+      transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.25s ease, border-color 0.25s ease;
+    }
+    .category-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 32px -10px rgba(30, 41, 59, 0.12);
+    }
+
+    .option-box {
+      transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .option-box:hover {
+      transform: translateX(5px);
+      box-shadow: 0 6px 14px -3px rgba(79, 70, 229, 0.1);
+    }
+    .option-selected {
+      animation: popSelect 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      border-color: #4f46e5 !important;
+      background: linear-gradient(135deg, rgba(238, 242, 255, 0.92), rgba(240, 253, 250, 0.75)) !important;
+      box-shadow: 0 8px 18px -4px rgba(79, 70, 229, 0.16);
+    }
+
+    .nav-cell {
+      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .nav-cell:hover {
+      transform: translateY(-2px) scale(1.08);
+    }
+    .nav-cell-done {
+      animation: popSelect 0.28s ease;
+    }
+
+    .stat-card-anim {
+      transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .stat-card-anim:hover {
+      transform: translateY(-3px);
+    }
+
+    /* Các cấp hiệu ứng Card Kết Quả theo điểm số */
+    .result-tier-legend {
+      animation: fadeSlideUp 0.5s ease both, rainbowGlow 3s infinite ease-in-out;
+      background: linear-gradient(135deg, #ffffff 0%, #fffbeb 50%, #f0fdf4 100%);
+    }
+    .result-tier-high {
+      box-shadow: 0 20px 45px -10px rgba(16, 185, 129, 0.25);
+      border-color: #10b981 !important;
+    }
+    .result-tier-good {
+      box-shadow: 0 18px 35px -10px rgba(79, 70, 229, 0.2);
+      border-color: #6366f1 !important;
+    }
+    .trophy-anim {
+      animation: floatTrophy 2.6s ease-in-out infinite;
+    }
+  </style>
+</head>
+<body class="text-slate-800 antialiased selection:bg-indigo-600 selection:text-white">
+
+  <!-- INPUT FILE ẨN DÙNG ĐỂ NẠP FILE WORD (.DOCX) TỰ ĐỘNG GHÉP HÌNH -->
+  <input type="file" id="docxFileInput" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" class="hidden" onchange="handleDocxFileUpload(event)">
+
+  <!-- ==================== 1. MENU CHÍNH ==================== -->
+  <div id="lobbyScreen" class="fixed inset-0 z-50 overflow-y-auto bg-gradient-to-br from-indigo-950 via-slate-900 to-teal-950 p-3 sm:p-6 flex items-center justify-center">
+    <div class="max-w-3xl w-full my-auto glass-panel rounded-3xl shadow-2xl border border-white/20 p-6 sm:p-8 relative overflow-hidden category-card">
+      
+      <!-- Chữ nhỏ "By YingSeo" ở góc phía trên bên trái -->
+      <div class="absolute top-4 left-5 text-[11px] font-bold tracking-wider text-slate-400 select-none flex items-center gap-1">
+        <i class="fa-solid fa-feather-pointed text-indigo-500 text-[10px]"></i>
+        <span>By YingSeo</span>
+      </div>
+
+      <div class="text-center mt-2 mb-6">
+        <span class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-extrabold uppercase mb-2">
+          <i class="fa-solid fa-dna text-teal-600"></i> Sinh Học 10 • Giữa Kỳ 1
+        </span>
+        <h1 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+          ÔN TẬP GKI - SINH HỌC 10
+        </h1>
+        <p class="text-xs sm:text-sm text-slate-500 mt-1 font-semibold">
+          150 Câu hỏi chuẩn đề cương (102 Trắc nghiệm • 22 Đúng/Sai • 26 Trả lời ngắn) • 150 Phút
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-5">
+        <!-- Cột Trái: Nhập tên + Cài đặt + Nút Add File Word (.docx) -->
+        <div class="md:col-span-7 space-y-4">
+          <div class="bg-indigo-50/70 border border-indigo-200 rounded-2xl p-4">
+            <label for="studentNameInput" class="block text-xs font-extrabold uppercase text-indigo-950 mb-1.5">
+              Họ và Tên Thí Sinh <span class="text-rose-500">*</span>
+            </label>
+            <input type="text" id="studentNameInput" required placeholder="Nhập họ và tên..."
+              onkeydown="if(event.key==='Enter') startExam()"
+              class="w-full px-4 py-3 bg-white border-2 border-indigo-200 rounded-xl text-sm font-bold text-slate-900 focus:outline-none focus:border-indigo-600 transition-all">
+            <p id="nameErrorMsg" class="hidden text-xs font-bold text-rose-600 mt-1.5">
+              <i class="fa-solid fa-triangle-exclamation"></i> Vui lòng nhập họ và tên để bắt đầu!
+            </p>
+          </div>
+
+          <!-- Đảo câu & Đảo đáp án -->
+          <div class="grid grid-cols-2 gap-3">
+            <div onclick="toggleExamSetting('shuffleQuestions')" id="boxToggleQ"
+              class="p-3 rounded-2xl border-2 border-indigo-500 bg-indigo-50/60 flex items-center justify-between cursor-pointer select-none transition-all stat-card-anim">
+              <div class="flex items-center gap-2.5">
+                <i class="fa-solid fa-shuffle text-indigo-600"></i>
+                <span class="text-xs font-extrabold text-slate-900">Đảo câu hỏi</span>
+              </div>
+              <span id="badgeToggleQ" class="px-2 py-0.5 rounded-md text-[11px] font-black bg-indigo-600 text-white">BẬT</span>
+            </div>
+
+            <div onclick="toggleExamSetting('shuffleOptions')" id="boxToggleOpt"
+              class="p-3 rounded-2xl border-2 border-teal-500 bg-teal-50/60 flex items-center justify-between cursor-pointer select-none transition-all stat-card-anim">
+              <div class="flex items-center gap-2.5">
+                <i class="fa-solid fa-list-ol text-teal-600"></i>
+                <span class="text-xs font-extrabold text-slate-900">Đảo đáp án</span>
+              </div>
+              <span id="badgeToggleOpt" class="px-2 py-0.5 rounded-md text-[11px] font-black bg-teal-600 text-white">BẬT</span>
+            </div>
+          </div>
+
+          <!-- NÚT ADD FILE WORD (.DOCX) ĐỂ TỰ ĐỘNG TRÍCH XUẤT & GẮN HÌNH THEO CÂU HỎI -->
+          <div id="docxUploadBox" class="p-3.5 rounded-2xl bg-amber-50/80 border-2 border-amber-300 flex items-center justify-between gap-3 stat-card-anim">
+            <div class="min-w-0">
+              <div class="text-xs font-extrabold text-slate-900 flex items-center gap-1.5">
+                <i class="fa-solid fa-file-word text-blue-600"></i>
+                <span id="docxStatusTitle">Đồng bộ hình từ File Word</span>
+              </div>
+              <div id="docxStatusSub" class="text-[11px] text-slate-600 truncate">
+                Chọn file .docx đề cương để tự động gắn hình & lưu giữ lâu dài
+              </div>
+            </div>
+            <div class="flex items-center gap-1.5 flex-shrink-0">
+              <button type="button" onclick="document.getElementById('docxFileInput').click()"
+                class="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-extrabold shadow-xs flex items-center gap-1.5 cursor-pointer transition-all">
+                <i class="fa-solid fa-file-import"></i> Chọn File Word
+              </button>
+              <button type="button" id="btnResetWordImgs" onclick="clearSavedDocxImages()" title="Xóa ảnh đã lưu"
+                class="hidden px-2.5 py-2 rounded-xl bg-rose-100 hover:bg-rose-200 text-rose-600 text-xs font-extrabold cursor-pointer transition-all">
+                <i class="fa-solid fa-trash-can"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Nút Bắt Đầu -->
+          <button type="button" onclick="startExam()"
+            class="w-full py-3.5 bg-gradient-to-r from-indigo-600 to-teal-600 hover:from-indigo-700 hover:to-teal-700 text-white font-black rounded-2xl shadow-lg shadow-indigo-600/25 active:scale-[0.99] transition-all flex items-center justify-center gap-2 text-base cursor-pointer">
+            <i class="fa-solid fa-play"></i>
+            <span>BẮT ĐẦU LÀM BÀI</span>
+          </button>
+        </div>
+
+        <!-- Cột Phải: Lịch Sử Thi Gọn -->
+        <div class="md:col-span-5 bg-white border border-slate-200 rounded-2xl p-4 flex flex-col justify-between shadow-xs">
+          <div>
+            <div class="flex items-center justify-between mb-2.5 pb-2 border-b border-slate-100">
+              <span class="text-xs font-extrabold uppercase text-slate-700 flex items-center gap-1.5">
+                <i class="fa-solid fa-clock-rotate-left text-indigo-600"></i> Lịch Sử Làm Bài
+              </span>
+              <button type="button" onclick="clearExamHistory()" class="text-[11px] font-bold text-rose-500 hover:text-rose-700 cursor-pointer">
+                Xóa
+              </button>
+            </div>
+            <div id="historyListContainer" class="overflow-y-auto max-h-56 custom-scrollbar space-y-2 pr-1"></div>
+          </div>
+          <div id="storagePersistBadge" class="pt-3 border-t border-slate-100 text-[11px] text-slate-400 font-semibold text-center">
+            Hình ảnh sau khi nạp sẽ tự giữ nguyên cho các lượt sau
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ==================== 2. THANH HEADER PHÒNG THI (TỰ ĐỘNG ẨN KHI NỘP BÀI XONG) ==================== -->
+  <header id="examTopHeader" class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-xs transition-all duration-300">
+    <div class="max-w-7xl mx-auto px-3 sm:px-4 h-16 flex items-center justify-between gap-3">
+      
+      <div class="flex items-center gap-2 sm:gap-3 min-w-0">
+        <button type="button" onclick="toggleSidebar()" class="lg:hidden p-2 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200">
+          <i class="fa-solid fa-bars text-base"></i>
+        </button>
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-teal-500 text-white flex items-center justify-center font-bold shadow-sm flex-shrink-0">
+          <i class="fa-solid fa-graduation-cap"></i>
+        </div>
+        <div class="min-w-0">
+          <div class="text-[10px] font-extrabold uppercase text-slate-400">Thí sinh • <span class="text-indigo-500">By YingSeo</span></div>
+          <div id="headerStudentName" class="text-xs sm:text-sm font-extrabold text-slate-900 truncate max-w-[130px] sm:max-w-[200px]">---</div>
+        </div>
+      </div>
+
+      <div class="hidden md:flex flex-col items-center flex-1 max-w-xs mx-2">
+        <div class="flex justify-between w-full text-[11px] font-extrabold text-slate-600 mb-1">
+          <span>Tiến độ</span>
+          <span id="progressText" class="text-indigo-600 font-mono">0% (0/150)</span>
+        </div>
+        <div class="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200 p-0.5">
+          <div id="progressBar" class="h-full bg-gradient-to-r from-indigo-600 via-blue-500 to-teal-500 rounded-full transition-all duration-300" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 sm:gap-3">
+        <div class="hidden xl:flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs font-extrabold">
+          <button type="button" onclick="filterQuestionCategory('all')" id="tab-all" class="filter-tab px-3 py-1.5 rounded-lg bg-white text-indigo-700 shadow-xs transition-all cursor-pointer">
+            Tất cả (150)
+          </button>
+          <button type="button" onclick="filterQuestionCategory('part1')" id="tab-part1" class="filter-tab px-3 py-1.5 rounded-lg text-slate-600 hover:text-indigo-700 transition-all cursor-pointer">
+            Trắc nghiệm (102)
+          </button>
+          <button type="button" onclick="filterQuestionCategory('part2')" id="tab-part2" class="filter-tab px-3 py-1.5 rounded-lg text-slate-600 hover:text-teal-700 transition-all cursor-pointer">
+            Đúng - Sai (22)
+          </button>
+          <button type="button" onclick="filterQuestionCategory('part3')" id="tab-part3" class="filter-tab px-3 py-1.5 rounded-lg text-slate-600 hover:text-amber-700 transition-all cursor-pointer">
+            Trả lời ngắn (26)
+          </button>
+        </div>
+
+        <div class="flex items-center gap-1.5 bg-rose-50 border-2 border-rose-200 text-rose-700 px-3 py-1.5 rounded-xl font-mono text-xs sm:text-sm font-black shadow-xs">
+          <i class="fa-regular fa-clock text-rose-600 animate-spin" style="animation-duration: 9s;"></i>
+          <span id="countdownDisplay">150:00</span>
+        </div>
+
+        <button type="button" id="submitExamBtn" onclick="promptSubmitConfirm()"
+          class="bg-gradient-to-r from-indigo-600 to-teal-600 hover:from-indigo-700 hover:to-teal-700 text-white font-black text-xs sm:text-sm px-4 sm:px-6 py-2.5 rounded-xl shadow-md shadow-indigo-600/25 active:scale-95 transition-all flex items-center gap-2 cursor-pointer">
+          <i class="fa-solid fa-paper-plane"></i>
+          <span>Nộp bài</span>
+        </button>
+      </div>
+
+    </div>
+
+    <div id="examSubHeader" class="xl:hidden flex items-center justify-between px-3 py-1.5 bg-slate-50 border-t border-slate-200 text-[11px] font-extrabold overflow-x-auto gap-2">
+      <div class="flex items-center gap-1 flex-shrink-0">
+        <button type="button" onclick="filterQuestionCategory('all')" id="m-tab-all" class="filter-tab px-2.5 py-1 rounded-lg bg-white text-indigo-700 border border-slate-200 shadow-2xs">Tất cả</button>
+        <button type="button" onclick="filterQuestionCategory('part1')" id="m-tab-part1" class="filter-tab px-2.5 py-1 rounded-lg text-slate-600">Trắc nghiệm</button>
+        <button type="button" onclick="filterQuestionCategory('part2')" id="m-tab-part2" class="filter-tab px-2.5 py-1 rounded-lg text-slate-600">Đúng/Sai</button>
+        <button type="button" onclick="filterQuestionCategory('part3')" id="m-tab-part3" class="filter-tab px-2.5 py-1 rounded-lg text-slate-600">Trả lời ngắn</button>
+      </div>
+      <div class="flex items-center gap-2 flex-shrink-0">
+        <span id="mobileProgressPercent" class="text-indigo-700 font-mono">0%</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==================== 3. VÙNG NỘI DUNG LÀM BÀI ==================== -->
+  <main class="max-w-7xl mx-auto px-3 sm:px-4 py-6">
+    <div class="flex gap-6 items-start">
+      
+      <!-- Cột Trái: Bảng Điểm & Danh Sách Câu Hỏi -->
+      <div class="flex-1 w-full min-w-0 space-y-6">
+
+        <!-- Bảng Kết Quả & Hiệu Ứng Theo Điểm Số -->
+        <section id="resultCard" class="hidden bg-white rounded-3xl shadow-xl border-2 border-indigo-200 p-5 sm:p-7 category-card relative overflow-hidden">
+          <div class="flex flex-col md:flex-row items-center justify-between gap-5 border-b border-slate-100 pb-5 relative z-10">
+            <div class="flex items-center gap-4">
+              <div id="resTrophyIcon" class="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 text-white flex items-center justify-center text-3xl shadow-lg trophy-anim flex-shrink-0">
+                <i class="fa-solid fa-trophy"></i>
+              </div>
+              <div>
+                <div class="flex flex-wrap items-center gap-2 mb-1">
+                  <span id="resRankBadge" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-emerald-100 text-emerald-800">
+                    <i class="fa-solid fa-crown"></i> HOÀN THÀNH BÀI THI
+                  </span>
+                  <span class="text-[11px] font-bold text-slate-400">By YingSeo</span>
+                </div>
+                <h2 class="text-xl sm:text-2xl font-black text-slate-900" id="resStudentName">Thí sinh: ---</h2>
+                <p class="text-xs text-slate-500 mt-0.5 font-semibold" id="resTimeUsed">Thời gian: ---</p>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-5 bg-white/90 border-2 border-indigo-100 p-4 rounded-2xl shadow-sm">
+              <div class="text-center">
+                <span class="block text-3xl sm:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-teal-600 font-mono" id="resScore">0.00</span>
+                <span class="text-[10px] font-extrabold uppercase text-slate-400">Điểm Hệ 10</span>
+              </div>
+              <div class="h-10 w-px bg-slate-200"></div>
+              <div class="text-xs space-y-1 font-bold text-slate-600">
+                <div>Đúng: <span id="resCorrectCount" class="text-emerald-600 font-black">0</span> câu</div>
+                <div>Sai: <span id="resWrongCount" class="text-rose-600 font-black">0</span> câu</div>
+                <div>Chưa làm: <span id="resUnansweredCount" class="text-slate-700 font-black">0</span> câu</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- THỐNG KÊ THEO BÀI: CHỈ CHỪA LẠI BÀI MẤY ĐÚNG MẤY CÂU SAI MẤY CÂU -->
+          <div class="mt-5 relative z-10">
+            <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-500 mb-3 flex items-center gap-1.5">
+              <i class="fa-solid fa-chart-simple text-indigo-600"></i> Thống Kê Theo Bài
+            </h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3" id="topicBreakdownGrid"></div>
+          </div>
+
+          <!-- Bộ lọc nhanh & Điều khiển khi các thanh trên đã ẩn -->
+          <div class="mt-5 flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-slate-100 relative z-10">
+            <div class="flex flex-wrap items-center gap-1.5">
+              <button type="button" onclick="filterQuestionCategory('all')" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-indigo-100 text-slate-700 hover:text-indigo-700 text-xs font-extrabold cursor-pointer">Tất cả (150)</button>
+              <button type="button" onclick="filterQuestionCategory('part1')" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-indigo-100 text-slate-700 hover:text-indigo-700 text-xs font-extrabold cursor-pointer">Trắc nghiệm (102)</button>
+              <button type="button" onclick="filterQuestionCategory('part2')" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-teal-100 text-slate-700 hover:text-teal-700 text-xs font-extrabold cursor-pointer">Đúng/Sai (22)</button>
+              <button type="button" onclick="filterQuestionCategory('part3')" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-amber-100 text-slate-700 hover:text-amber-700 text-xs font-extrabold cursor-pointer">Trả lời ngắn (26)</button>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <button type="button" onclick="replayCelebrationEffect()"
+                class="px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-extrabold rounded-xl shadow-sm transition-all flex items-center gap-1.5 cursor-pointer">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> Hiệu ứng
+              </button>
+              <button type="button" onclick="backToLobby()"
+                class="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-extrabold rounded-xl transition-all flex items-center gap-2 cursor-pointer">
+                <i class="fa-solid fa-rotate-left"></i> Về Menu Chính
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- NƠI RENDER CÁC CÂU HỎI -->
+        <div id="examCardsList" class="space-y-6"></div>
+
+      </div>
+
+      <!-- Cột Phải: Sidebar Bảng Điều Hướng Câu Hỏi -->
+      <aside id="sidebarNav"
+        class="fixed inset-y-0 right-0 z-50 w-80 bg-white border-l border-slate-200 shadow-2xl p-4 transform translate-x-full transition-transform duration-300 lg:translate-x-0 lg:sticky lg:top-6 lg:z-10 lg:w-80 lg:shadow-md lg:border lg:rounded-3xl">
+        
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+          <div class="flex items-center gap-2">
+            <i class="fa-solid fa-list-check text-indigo-600"></i>
+            <span class="text-xs sm:text-sm font-extrabold text-slate-900">Mục Lục Câu Hỏi</span>
+          </div>
+          <button type="button" onclick="toggleSidebar()" class="lg:hidden p-1.5 rounded-lg text-slate-400 hover:text-slate-700">
+            <i class="fa-solid fa-xmark text-lg"></i>
+          </button>
+        </div>
+
+        <div class="grid grid-cols-3 gap-1 py-2 text-[10px] font-bold text-slate-600 border-b border-slate-100">
+          <div class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded bg-emerald-500 inline-block"></span> Đã làm / Đúng</div>
+          <div class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded bg-rose-500 inline-block"></span> Câu sai</div>
+          <div class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded bg-slate-200 inline-block"></span> Chưa làm</div>
+        </div>
+
+        <div class="mt-3 overflow-y-auto max-h-[calc(100vh-180px)] custom-scrollbar pr-1 space-y-4">
+          <div>
+            <div class="text-[11px] uppercase tracking-wider font-extrabold text-indigo-700 mb-2 flex justify-between items-center bg-indigo-50 px-2.5 py-1 rounded-lg">
+              <span>I. Trắc Nghiệm</span>
+              <span id="navStatP1" class="font-mono text-indigo-900">0/102</span>
+            </div>
+            <div class="grid grid-cols-6 gap-1.5" id="navGridP1"></div>
+          </div>
+
+          <div>
+            <div class="text-[11px] uppercase tracking-wider font-extrabold text-teal-700 mb-2 flex justify-between items-center bg-teal-50 px-2.5 py-1 rounded-lg">
+              <span>II. Đúng - Sai</span>
+              <span id="navStatP2" class="font-mono text-teal-900">0/22</span>
+            </div>
+            <div class="grid grid-cols-6 gap-1.5" id="navGridP2"></div>
+          </div>
+
+          <div>
+            <div class="text-[11px] uppercase tracking-wider font-extrabold text-amber-700 mb-2 flex justify-between items-center bg-amber-50 px-2.5 py-1 rounded-lg">
+              <span>III. Trả Lời Ngắn</span>
+              <span id="navStatP3" class="font-mono text-amber-900">0/26</span>
+            </div>
+            <div class="grid grid-cols-6 gap-1.5" id="navGridP3"></div>
+          </div>
+        </div>
+      </aside>
+
+    </div>
+  </main>
+
+  <!-- Nút nổi lên đầu trang khi xem lại bài đã nộp -->
+  <button id="floatingBackTopBtn" onclick="window.scrollTo({top: 0, behavior: 'smooth'})"
+    class="fixed bottom-5 right-5 z-40 hidden px-4 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-extrabold shadow-xl flex items-center gap-2 cursor-pointer transition-all hover:scale-105">
+    <i class="fa-solid fa-arrow-up"></i> Lên Bảng Điểm
+  </button>
+
+  <div id="drawerOverlay" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-40 hidden lg:hidden"></div>
+
+  <!-- MODAL XÁC NHẬN NỘP BÀI -->
+  <div id="confirmModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-xs hidden">
+    <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full p-6 border border-slate-100 text-center category-card">
+      <div class="w-14 h-14 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-3 text-2xl">
+        <i class="fa-solid fa-file-invoice"></i>
+      </div>
+      <h3 class="text-lg font-extrabold text-slate-900">Xác Nhận Nộp Bài</h3>
+      <p id="confirmModalDetail" class="text-xs sm:text-sm text-slate-600 mt-2 leading-relaxed"></p>
+      <div class="mt-6 flex gap-3">
+        <button type="button" onclick="closeConfirmModal()"
+          class="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs sm:text-sm font-extrabold rounded-xl transition-colors cursor-pointer">
+          Làm tiếp
+        </button>
+        <button type="button" onclick="executeSubmitExam()"
+          class="flex-1 py-3 bg-gradient-to-r from-indigo-600 to-teal-600 hover:from-indigo-700 hover:to-teal-700 text-white text-xs sm:text-sm font-extrabold rounded-xl shadow-lg shadow-indigo-500/25 transition-all cursor-pointer">
+          Nộp bài ngay
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST THÔNG BÁO -->
+  <div id="toastAlert" class="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 hidden px-5 py-3 rounded-2xl bg-slate-900 text-white text-xs sm:text-sm font-bold shadow-2xl border border-white/15 flex items-center gap-2.5">
+    <i class="fa-solid fa-circle-check text-emerald-400"></i>
+    <span id="toastAlertMessage">Thông báo</span>
+  </div>
+
+  <!-- ==================== 4. TOÀN BỘ SCRIPT XỬ LÝ ==================== -->
+  <script>
+    /* ---------------------------------------------------------
+       A. HỆ THỐNG HÌNH MẶC ĐỊNH DỰ PHÒNG (KHI CHƯA NẠP FILE WORD)
+       --------------------------------------------------------- */
+    function svgToDataUrl(svgString) {
+      return "data:image/svg+xml;utf8," + encodeURIComponent(svgString.trim());
+    }
+
+    const DOC_IMAGE_CATALOG = {
+      "b2_process": {
+        title: "Các bước trong tiến trình nghiên cứu khoa học",
+        url: svgToDataUrl(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 200" width="720" height="190">
+          <rect width="760" height="200" rx="16" fill="#f8fafc"/>
+          <path d="M560 40 L560 15 L100 15 L100 45" fill="none" stroke="#ef4444" stroke-width="2.5"/>
+          <path d="M400 40 L400 28 L120 28 L120 45" fill="none" stroke="#ef4444" stroke-width="2"/>
+          <g transform="translate(40,50)">
+            <rect width="120" height="90" rx="14" fill="#e0e7ff" stroke="#4f46e5" stroke-width="2.5"/>
+            <circle cx="55" cy="38" r="18" fill="#fff" stroke="#1e293b" stroke-width="3"/>
+            <line x1="68" y1="51" x2="82" y2="65" stroke="#1e293b" stroke-width="4" stroke-linecap="round"/>
+            <text x="55" y="44" font-family="sans-serif" font-size="18" font-weight="bold" text-anchor="middle" fill="#4f46e5">?</text>
+            <text x="60" y="115" font-family="sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="#1e293b">Bước 1</text>
+          </g>
+          <text x="195" y="95" font-family="sans-serif" font-size="24" font-weight="bold" text-anchor="middle" fill="#3b82f6">⇄</text>
+          <g transform="translate(230,50)">
+            <rect width="120" height="90" rx="14" fill="#fef3c7" stroke="#d97706" stroke-width="2.5"/>
+            <rect x="38" y="16" width="44" height="56" rx="4" fill="#fff" stroke="#78350f" stroke-width="2"/>
+            <text x="60" y="115" font-family="sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="#1e293b">Bước 2</text>
+          </g>
+          <text x="385" y="95" font-family="sans-serif" font-size="24" font-weight="bold" text-anchor="middle" fill="#3b82f6">⇄</text>
+          <g transform="translate(420,50)">
+            <rect width="145" height="90" rx="14" fill="#dcfce7" stroke="#16a34a" stroke-width="2.5"/>
+            <text x="72" y="115" font-family="sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="#1e293b">Bước 3</text>
+          </g>
+          <text x="595" y="95" font-family="sans-serif" font-size="24" font-weight="bold" text-anchor="middle" fill="#3b82f6">⇄</text>
+          <g transform="translate(625,50)">
+            <rect width="105" height="90" rx="14" fill="#fce7f3" stroke="#db2777" stroke-width="2.5"/>
+            <text x="52" y="115" font-family="sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="#1e293b">Bước 4</text>
+          </g>
+        </svg>`)
+      },
+      "b3_cell": { title: "Cấp độ Tế bào", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Biological_cell.svg/600px-Biological_cell.svg.png" },
+      "b3_mitochondria": { title: "Cấp độ Bào quan (Ti thể)", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Animal_mitochondrion_diagram_en.svg/600px-Animal_mitochondrion_diagram_en.svg.png" },
+      "b3_heart": { title: "Cấp độ Cơ quan (Tim)", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Diagram_of_the_human_heart_%28cropped%29.svg/500px-Diagram_of_the_human_heart_%28cropped%29.svg.png" },
+      "b3_dog": { title: "Cấp độ Cơ thể", url: "https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&w=600&q=80" },
+      "b3_bird_migration": { title: "Đàn chim di cư", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/26/Canada_geese_flight_formation.jpg/640px-Canada_geese_flight_formation.jpg" },
+      "b4_water_molecule": { title: "Cấu tạo phân tử nước H2O", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Water_molecule_dimensions.svg/500px-Water_molecule_dimensions.svg.png" },
+      "b4_water_network": { title: "Liên kết hydrogen giữa các phân tử nước", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/3D_model_hydrogen_bonds_in_water.svg/600px-3D_model_hydrogen_bonds_in_water.svg.png" },
+      "b4_water_polarity": { title: "Tính phân cực của nước (104.5°)", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Water-elpot-transparent-3D-balls.png/500px-Water-elpot-transparent-3D-balls.png" },
+      "b4_water_10445": { title: "Đặc điểm liên kết phân tử nước (104.45°)", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Water_molecule_dimensions.svg/500px-Water_molecule_dimensions.svg.png" },
+      "b4_stem_cells": { title: "Hình 4.1. Biệt hóa tế bào gốc phôi", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Stem_cells_diagram.png/600px-Stem_cells_diagram.png" },
+      "b5_biuret_benedict": { title: "Thí nghiệm 1 (Biuret) & Thí nghiệm 2 (Benedict)", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Biuret_test.svg/500px-Biuret_test.svg.png" },
+      "b5_protein_export": { title: "Sơ đồ tổng hợp và xuất bào Protein", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/10/Nucleus_ER_golgi.jpg/600px-Nucleus_ER_golgi.jpg" },
+      "b5_steroids": { title: "Cấu tạo Testosterone và Estrogen", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Steroid_numbering.svg/600px-Steroid_numbering.svg.png" },
+      "b5_nucleotide_cg": { title: "Cấu trúc đoạn mạch 2 nucleotide C và G", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e2/RNA_chemical_structure.svg/500px-RNA_chemical_structure.svg.png" },
+      "b5_rna_types": { title: "Hình 6.13. Cấu tạo tRNA (a), mRNA (b) và rRNA (c)", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/TRNA-Phe_yeast_1ehz.png/500px-TRNA-Phe_yeast_1ehz.png" }
+    };
+
+    // 15 mốc hình ảnh tương ứng trong file Word `dapan- SINH HỌC 10 - NHCHGHK1.-2627.docx`
+    const DOCX_QUESTION_IMAGE_SLOTS = [
+      { qIds: ["p1_b2_17"] },
+      { qIds: ["p1_b3_10"] },
+      { qIds: ["p1_b3_11"] },
+      { qIds: ["p1_b3_12"] },
+      { qIds: ["p1_b3_13"] },
+      { qIds: ["p3_b3_5"] },
+      { qIds: ["p1_b4_26"] },
+      { qIds: ["p1_b4_27"] },
+      { qIds: ["p1_b4_29"] },
+      { qIds: ["p1_b4_30"] },
+      { qIds: ["p3_b4_4"] },
+      { qIds: ["p2_b5_10"] },
+      { qIds: ["p2_b5_11"] },
+      { qIds: ["p3_b5_3"] },
+      { qIds: ["p3_b5_11", "p3_b5_12"] },
+      { qIds: ["p3_b5_14"] }
+    ];
+
+    /* ---------------------------------------------------------
+       B. HỆ THỐNG LƯU TRỮ VĨNH VIỄN (INDEXEDDB + LOCALSTORAGE) & TRÌNH ĐỌC FILE WORD (.DOCX)
+       --------------------------------------------------------- */
+    let customQuestionImages = {};
+    const IDB_NAME = "Bio10ExamPermanentDB";
+    const IDB_STORE = "question_images";
+
+    function openImageDB() {
+      return new Promise((resolve, reject) => {
+        const req = indexedDB.open(IDB_NAME, 1);
+        req.onupgradeneeded = (e) => {
+          const db = e.target.result;
+          if (!db.objectStoreNames.contains(IDB_STORE)) {
+            db.createObjectStore(IDB_STORE);
+          }
+        };
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    async function savePersistentImages(imgMap) {
+      customQuestionImages = { ...customQuestionImages, ...imgMap };
+      try {
+        const db = await openImageDB();
+        const tx = db.transaction(IDB_STORE, "readwrite");
+        const store = tx.objectStore(IDB_STORE);
+        store.put(customQuestionImages, "saved_docx_images");
+      } catch (err) {
+        console.warn("IndexedDB fallback", err);
+      }
+      try {
+        localStorage.setItem("bio10_docx_images_v2", JSON.stringify(customQuestionImages));
+      } catch (e) {}
+
+      updateDocxStatusUI();
+    }
+
+    async function loadPersistentImages() {
+      try {
+        const db = await openImageDB();
+        const tx = db.transaction(IDB_STORE, "readonly");
+        const store = tx.objectStore(IDB_STORE);
+        const data = await new Promise((res) => {
+          const r = store.get("saved_docx_images");
+          r.onsuccess = () => res(r.result);
+          r.onerror = () => res(null);
+        });
+        if (data && Object.keys(data).length > 0) {
+          customQuestionImages = data;
+          updateDocxStatusUI();
+          return;
+        }
+      } catch (e) {}
+
+      try {
+        const raw = localStorage.getItem("bio10_docx_images_v2");
+        if (raw) {
+          customQuestionImages = JSON.parse(raw);
+        }
+      } catch (e) {}
+      updateDocxStatusUI();
+    }
+
+    async function clearSavedDocxImages() {
+      if (!confirm("Xóa các hình đã trích xuất từ file Word và quay về hình mặc định?")) return;
+      customQuestionImages = {};
+      try {
+        const db = await openImageDB();
+        const tx = db.transaction(IDB_STORE, "readwrite");
+        tx.objectStore(IDB_STORE).delete("saved_docx_images");
+      } catch (e) {}
+      localStorage.removeItem("bio10_docx_images_v2");
+      updateDocxStatusUI();
+      showToast("Đã xóa hình lưu trữ!");
+    }
+
+    function updateDocxStatusUI() {
+      const count = Object.keys(customQuestionImages).length;
+      const box = document.getElementById("docxUploadBox");
+      const title = document.getElementById("docxStatusTitle");
+      const sub = document.getElementById("docxStatusSub");
+      const resetBtn = document.getElementById("btnResetWordImgs");
+
+      if (count > 0) {
+        box.className = "p-3.5 rounded-2xl bg-emerald-50/90 border-2 border-emerald-400 flex items-center justify-between gap-3 stat-card-anim";
+        title.innerHTML = `<span class="text-emerald-800">Đã gắn ${count} câu có hình từ File Word</span>`;
+        sub.innerHTML = `<span class="text-emerald-700 font-semibold">Đã lưu cố định cho tất cả các lượt làm tiếp theo</span>`;
+        resetBtn.classList.remove("hidden");
+      } else {
+        box.className = "p-3.5 rounded-2xl bg-amber-50/80 border-2 border-amber-300 flex items-center justify-between gap-3 stat-card-anim";
+        title.innerText = "Đồng bộ hình từ File Word";
+        sub.innerText = "Chọn file .docx đề cương để tự động gắn hình & lưu giữ lâu dài";
+        resetBtn.classList.add("hidden");
+      }
+    }
+
+    async function handleDocxFileUpload(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+
+      showToast("Đang đọc file Word và ghép hình vào câu hỏi...");
+
+      try {
+        const arrayBuffer = await file.arrayBuffer();
+        const zip = await JSZip.loadAsync(arrayBuffer);
+
+        const relsFile = zip.file("word/_rels/document.xml.rels");
+        const rIdToTarget = {};
+        if (relsFile) {
+          const relsXml = await relsFile.async("string");
+          const parser = new DOMParser();
+          const relsDoc = parser.parseFromString(relsXml, "application/xml");
+          const relNodes = relsDoc.getElementsByTagName("Relationship");
+          for (let i = 0; i < relNodes.length; i++) {
+            const id = relNodes[i].getAttribute("Id");
+            const target = relNodes[i].getAttribute("Target");
+            if (id && target) {
+              rIdToTarget[id] = target.startsWith("word/") ? target : "word/" + target.replace(/^\/+/, "");
+            }
+          }
+        }
+
+        const docXmlFile = zip.file("word/document.xml");
+        const orderedImagesDataUrls = [];
+
+        if (docXmlFile) {
+          const docXml = await docXmlFile.async("string");
+          const parser = new DOMParser();
+          const xmlDoc = parser.parseFromString(docXml, "application/xml");
+
+          const allElements = xmlDoc.getElementsByTagName("*");
+          const seenRIds = [];
+
+          for (let i = 0; i < allElements.length; i++) {
+            const el = allElements[i];
+            const localName = el.localName || el.nodeName.split(":").pop();
+            if (localName === "blip" || localName === "imagedata") {
+              const rId = el.getAttribute("r:embed") || el.getAttribute("r:id") || el.getAttribute("id");
+              if (rId && rIdToTarget[rId]) {
+                seenRIds.push(rIdToTarget[rId]);
+              }
+            }
+          }
+
+          for (const mediaPath of seenRIds) {
+            const imgEntry = zip.file(mediaPath);
+            if (imgEntry) {
+              const base64 = await imgEntry.async("base64");
+              const ext = mediaPath.split(".").pop().toLowerCase();
+              const mime = ext === "png" ? "image/png" : ext === "gif" ? "image/gif" : "image/jpeg";
+              orderedImagesDataUrls.push(`data:${mime};base64,${base64}`);
+            }
+          }
+        }
+
+        if (orderedImagesDataUrls.length === 0) {
+          const mediaFiles = [];
+          zip.folder("word/media").forEach((relPath, fileEntry) => {
+            mediaFiles.push({ relPath, fileEntry });
+          });
+          mediaFiles.sort((a, b) => a.relPath.localeCompare(b.relPath, undefined, { numeric: true }));
+
+          for (const item of mediaFiles) {
+            const base64 = await item.fileEntry.async("base64");
+            const ext = item.relPath.split(".").pop().toLowerCase();
+            const mime = ext === "png" ? "image/png" : "image/jpeg";
+            orderedImagesDataUrls.push(`data:${mime};base64,${base64}`);
+          }
+        }
+
+        if (orderedImagesDataUrls.length === 0) {
+          showToast("Không tìm thấy hình ảnh nào trong file Word này!");
+          return;
+        }
+
+        const startOffset = orderedImagesDataUrls.length >= 16 ? 1 : 0;
+        const extractedImages = orderedImagesDataUrls.slice(startOffset);
+
+        const newMappedImages = {};
+        DOCX_QUESTION_IMAGE_SLOTS.forEach((slot, idx) => {
+          const imgDataUrl = extractedImages[idx];
+          if (imgDataUrl) {
+            slot.qIds.forEach(qId => {
+              newMappedImages[qId] = imgDataUrl;
+            });
+          }
+        });
+
+        await savePersistentImages(newMappedImages);
+        Object.keys(newMappedImages).forEach(qId => refreshQuestionImageDOM(qId));
+
+        showToast(`Đã tự động gắn ${Object.keys(newMappedImages).length} câu hỏi có hình từ file Word & lưu vĩnh viễn!`);
+      } catch (err) {
+        console.error(err);
+        showToast("Lỗi khi đọc file Word. Hãy chọn đúng định dạng .docx!");
+      }
+    }
+
+    function buildQuestionImageHtml(q) {
+      const customUrl = customQuestionImages[q.id];
+      const defaultObj = q.imageKey && DOC_IMAGE_CATALOG[q.imageKey] ? DOC_IMAGE_CATALOG[q.imageKey] : null;
+
+      if (customUrl) {
+        return `
+          <div class="my-4 p-3.5 bg-white border-2 border-indigo-100 rounded-2xl flex flex-col items-center shadow-2xs">
+            <img src="${customUrl}" alt="Hình câu hỏi từ file Word" class="exam-img" />
+          </div>
+        `;
+      }
+
+      if (defaultObj) {
+        return `
+          <div class="my-4 p-3.5 bg-slate-50 border border-slate-200 rounded-2xl flex flex-col items-center">
+            <img src="${defaultObj.url}" alt="${defaultObj.title}" class="exam-img shadow-xs" />
+            <span class="text-xs font-bold text-slate-500 mt-2">${defaultObj.title}</span>
+          </div>
+        `;
+      }
+
+      return "";
+    }
+
+    function findQuestionById(qId) {
+      return (
+        activeExamData.part1.find(q => q.id === qId) ||
+        activeExamData.part2.find(q => q.id === qId) ||
+        activeExamData.part3.find(q => q.id === qId) ||
+        EXAM_DATABASE.part1.find(q => q.id === qId) ||
+        EXAM_DATABASE.part2.find(q => q.id === qId) ||
+        EXAM_DATABASE.part3.find(q => q.id === qId)
+      );
+    }
+
+    function refreshQuestionImageDOM(qId) {
+      const wrapper = document.getElementById(`imgWrap_${qId}`);
+      const q = findQuestionById(qId);
+      if (wrapper && q) {
+        wrapper.innerHTML = buildQuestionImageHtml(q);
+      }
+    }
+
+    /* ---------------------------------------------------------
+       C. NGÂN HÀNG CÂU HỎI ĐỐI CHIẾU CHÍNH XÁC 100% VỚI FILE WORD (150 CÂU: 102 P1 + 22 P2 + 26 P3)
+       --------------------------------------------------------- */
+    const EXAM_DATABASE = {
+      // PHẦN 1: 102 CÂU TRẮC NGHIỆM NHIỀU LỰA CHỌN CHUẨN TRONG FILE
+      part1: [
+        // Bài 1 (11 câu)
+        { id: "p1_b1_1", topic: "Bài 1", text: "Đối tượng nghiên cứu của Sinh học là", options: ["sự biến đổi của các chất trong đời sống tự nhiên.", "các cá thể sống cũng như mối quan hệ giữa các cá thể với nhau và với môi trường.", "các sự vật, hiện tượng của thế giới tự nhiên và ảnh hưởng của thế giới tự nhiên đến cuộc sống con người.", "vật chất, năng lượng và sự vận động của chúng trong đời sống."], correctText: "các cá thể sống cũng như mối quan hệ giữa các cá thể với nhau và với môi trường.", exp: "Đối tượng nghiên cứu của Sinh học là các cá thể sống cũng như mối quan hệ giữa các cá thể với nhau và với môi trường." },
+        { id: "p1_b1_2", topic: "Bài 1", text: "Một lĩnh vực của ngành Sinh học đóng góp trong nghiên cứu cấu tạo và hoạt động sống của tế bào là", options: ["di truyền học.", "sinh học tế bào.", "giải phẫu học.", "động vật học."], correctText: "sinh học tế bào.", exp: "Sinh học tế bào nghiên cứu cấu tạo và hoạt động sống của tế bào." },
+        { id: "p1_b1_3", topic: "Bài 1", text: "Đối tượng nghiên cứu của sinh học là các ……………. và các cấp độ tổ chức khác của thế giới sống. Chọn đáp án đúng nhất để điền vào chỗ trống trong câu trên.", options: ["tập thể sống.", "cơ thể sống", "thực vật sống.", "động vật sống."], correctText: "cơ thể sống", exp: "Đối tượng nghiên cứu của sinh học là các cơ thể sống và các cấp độ tổ chức khác của thế giới sống." },
+        { id: "p1_b1_4", topic: "Bài 1", text: "Ngành công nghệ nào sử dụng tế bào sống và các quá trình sinh học để tạo ra các sản phẩm sinh học cần thiết cho con người?", options: ["Công nghệ sinh học.", "Công nghệ thực phẩm.", "Công nghệ thông tin.", "Công nghệ kĩ thuật."], correctText: "Công nghệ sinh học.", exp: "Công nghệ sinh học sử dụng tế bào sống và các quá trình sinh học." },
+        { id: "p1_b1_5", topic: "Bài 1", text: "Đâu là nhóm ngành thuộc nhóm ngành sinh học cơ bản?", options: ["Y học, Dược học, Pháp y.", "Nông nghiệp, Pháp y, Thủy sản.", "Lâm nghiệp, Y học, Công nghệ thực phẩm..", "Thủy sản, Nông nghiệp, Khoa học môi trường."], correctText: "Y học, Dược học, Pháp y.", exp: "Y học, Dược học, Pháp y thuộc nhóm ngành sinh học cơ bản." },
+        { id: "p1_b1_6", topic: "Bài 1", text: "Đâu là nhóm ngành thuộc nhóm ngành sinh học ứng dụng?", options: ["Y học, Dược học, Nông nghiệp .", "Nông nghiệp, Pháp y, Thủy sản.", "Lâm nghiệp, Thủy sản, Công nghệ thực phẩm.", "Y học, Nông nghiệp, Khoa học môi trường."], correctText: "Lâm nghiệp, Thủy sản, Công nghệ thực phẩm.", exp: "Lâm nghiệp, Thủy sản, Công nghệ thực phẩm thuộc nhóm ngành sinh học ứng dụng." },
+        { id: "p1_b1_7", topic: "Bài 1", text: "Nhóm ngành ứng dụng sinh học có nhiều thành tựu đáng chú ý hiện nay là", options: ["công nghệ thực phẩm, khoa học môi trường, nông nghiệp, lâm nghiệp, thủy sản...", "sư phạm sinh học, khoa học môi trường, nông nghiệp, lâm nghiệp, thủy sản...", "y đa khoa, khoa học môi trường, nông nghiệp, lậm nghiệp, thủy sản...", "điều dưỡng, công nghệ thực phẩm, khoa học môi trường, nông nghiệp."], correctText: "công nghệ thực phẩm, khoa học môi trường, nông nghiệp, lâm nghiệp, thủy sản...", exp: "Các ngành Sư phạm sinh học, Y đa khoa, Điều dưỡng thuộc nhóm ngành Sinh học cơ bản." },
+        { id: "p1_b1_8", topic: "Bài 1", text: "Ngành nghề nào sau đây có vai trò sản xuất các loại vaccine, enzyme, kháng thể, thuốc,… nhằm phòng và chữa trị nhiều bệnh ở người?", options: ["Y học.", "Dược học.", "Pháp y.", "Công nghệ thực phẩm."], correctText: "Dược học.", exp: "Dược học sản xuất vaccine, enzyme, kháng thể, thuốc." },
+        { id: "p1_b1_9", topic: "Bài 1", text: "Sự phát triển nhằm thỏa mãn nhu cầu của thế hệ hiện tại nhưng không làm ảnh hưởng đến khả năng thỏa mãn nhu cầu của các thế hệ tương lai được gọi là", options: ["tăng trưởng kinh tế.", "phát triển bền vững.", "phát triển đa dạng.", "tiến bộ sinh học."], correctText: "phát triển bền vững.", exp: "Khái niệm phát triển bền vững." },
+        { id: "p1_b1_10", topic: "Bài 1", text: "Phát triển bền vững là", options: ["sự phát triển nhằm thỏa mãn nhu cầu lợi ích của thế hệ hiện tại và các thế hệ tương lai.", "sự phát triển chỉ nhằm thỏa mãn nhu cầu của các thế hệ tương lai nhưng không làm ảnh hưởng đến khả năng thỏa mãn nhu cầu của thế hệ hiện tại.", "sự phát triển nhằm thỏa mãn nhu cầu của thế hệ hiện tại nhưng không làm ảnh hưởng đến khả năng thỏa mãn nhu cầu của các thế hệ tương lai.", "sự phát triển nhằm thỏa mãn nhu cầu của các thế hệ tương lai ."], correctText: "sự phát triển nhằm thỏa mãn nhu cầu của thế hệ hiện tại nhưng không làm ảnh hưởng đến khả năng thỏa mãn nhu cầu của các thế hệ tương lai.", exp: "Định nghĩa phát triển bền vững." },
+        { id: "p1_b1_11", topic: "Bài 1", text: "Việc tạo ra xăng sinh học là phát minh mang lại lợi ích trong lĩnh vực nào sau đây?", options: ["Y – dược học.", "Bảo vệ môi trường.", "Lâm nghiệp.", "Công nghệ vật liệu."], correctText: "Bảo vệ môi trường.", exp: "Xăng sinh học giúp giảm ô nhiễm, bảo vệ môi trường." },
+
+        // Bài 2 (17 câu)
+        { id: "p1_b2_1", topic: "Bài 2", text: "Nhóm thiết bị nào dưới đây thường được sử dụng trong nghiên cứu và học tập sinh học?", options: ["Kính hiển vi, máy li tâm, các loại kính lúp, ống hút, pipet.", "Kính hiển vi, máy li tâm, các loại kính lúp, máy đo nhiệt kế.", "Kính hiển vi, máy li tâm, máy hút ẩm, thiết bị đo khối lượng.", "Kính hiển vi, máy li tâm, lamen, sổ ghi chép, pipet, máy đo lực."], correctText: "Kính hiển vi, máy li tâm, các loại kính lúp, ống hút, pipet.", exp: "Thiết bị chuẩn dùng trong nghiên cứu và học tập sinh học." },
+        { id: "p1_b2_2", topic: "Bài 2", text: "Trong tiến trình nghiên cứu môn Sinh học, kĩ năng nào sau đây có vai trò định hướng vấn đề nghiên cứu?", options: ["Kĩ năng thiết kế và tiến hành thí nghiệm.", "Kĩ năng xây dựng giả thuyết.", "Kĩ năng điều tra, khảo sát thực địa.", "Kĩ năng quan sát và đặt câu hỏi nghiên cứu."], correctText: "Kĩ năng quan sát và đặt câu hỏi nghiên cứu.", exp: "Quan sát và đặt câu hỏi định hướng vấn đề nghiên cứu." },
+        { id: "p1_b2_3", topic: "Bài 2", text: "Ngành khoa học nào sau đây được ứng dụng trong xây dựng ngân hàng gene giúp lưu trữ cơ sở dữ liệu trình tự gene để tìm kiếm những gene quy định các tính trạng mong muốn?", options: ["Khoa học Trái Đất.", "Công nghệ Sinh học.", "Tin sinh học.", "Vi sinh vật học."], correctText: "Tin sinh học.", exp: "Tin sinh học ứng dụng xây dựng ngân hàng gene." },
+        { id: "p1_b2_4", topic: "Bài 2", text: "Nghiên cứu khoa học là", options: ["một quá trình chứng minh các giả thuyết.", "một quá trình tìm hiểu những tri thức mới.", "một quá trình thu thập và xử lí thông tin.", "một quá trình thực nghiệm để làm rõ các lý thuyết."], correctText: "một quá trình tìm hiểu những tri thức mới.", exp: "Nghiên cứu khoa học là quá trình tìm hiểu những tri thức mới." },
+        { id: "p1_b2_5", topic: "Bài 2", text: "Đâu không phải là ứng dụng của tin sinh học?", options: ["Dò tìm và phát hiện đột biến gây ra các bệnh di truyền để từ đó phát hiện và điều trị sớm.", "Tạo ra giống cây trồng siêu sản lượng, chống chịu được nhiều bệnh tật, chống thuốc trừ sâu.", "So sánh hệ gene (hay DNA), trình tự của protein nhằm xác định quan hệ huyết thống, xác nhận quan hệ họ hàng giữa các loài.", "Xây dựng ngân hàng gene giúp lưu trữ cơ sở dữ liệu trình tự gene để tìm kiếm những gene quy định các tính trạng mong muốn."], correctText: "Tạo ra giống cây trồng siêu sản lượng, chống chịu được nhiều bệnh tật, chống thuốc trừ sâu.", exp: "Tạo giống cây trồng là ứng dụng của công nghệ sinh học/công nghệ gene." },
+        { id: "p1_b2_6", topic: "Bài 2", text: "Sắp xếp các bước sau đây đúng với trình tự thực hiện trong phương pháp quan sát.\n(1) Thu thập, ghi chép và xử lí các dữ liệu quan sát được.\n(2) Xác định đối tượng quan sát và phạm vi quan sát.\n(3) Xác định công cụ quan sát phù hợp.", options: ["(1) → (2) → (3).", "(1) → (3) → (2).", "(2) → (3) → (1).", "(3) → (2) → (1)."], correctText: "(2) → (3) → (1).", exp: "Xác định đối tượng (2) → Xác định công cụ (3) → Thu thập, xử lí dữ liệu (1)." },
+        { id: "p1_b2_7", topic: "Bài 2", text: "Quy trình thực hiện bằng phương pháp thực nghiệm khoa học theo trình tự đúng?\n(1) Xử lí các dữ liệu thu thập được và báo cáo kết quả thực nghiệm.\n(2) Chuẩn bị các điều kiện thí nghiệm, thiết kế các mô hình thực nghiệm phù hợp với mục đích thí nghiệm.\n(3) Tiến hành thực nghiệm và thu thập các dữ liệu.", options: ["(1) → (2) → (3).", "(2) → (3) → (1).", "(2) → (1) → (3).", "(3) → (2) → (1)."], correctText: "(2) → (3) → (1).", exp: "Chuẩn bị (2) → Tiến hành (3) → Xử lí và báo cáo (1)." },
+        { id: "p1_b2_8", topic: "Bài 2", text: "Để xác định công cụ quan sát, chúng ta cần quan tâm đến", options: ["vị trí địa lý, đặc điểm của đối tượng quan sát.", "thời điểm quan sát, đặc điểm của đối tượng quan sát.", "phạm vi quan sát, thời gian quan sát.", "phạm vi quan sát, đặc điểm của đối tượng quan sát."], correctText: "phạm vi quan sát, đặc điểm của đối tượng quan sát.", exp: "Dựa vào phạm vi quan sát và đặc điểm của đối tượng quan sát." },
+        { id: "p1_b2_9", topic: "Bài 2", text: "Phương pháp thu nhận thông tin được thực hiện trong không gian giới hạn của phòng thí nghiệm, gồm 4 bước chuẩn bị, tiến hành thí nghiệm, báo cáo kết quả thí nghiệm và vệ sinh sau thực hành còn được gọi là gì?", options: ["Phương pháp quan sát.", "Phương pháp làm việc trong phòng thí nghiệm.", "Phương pháp thực nghiệm khoa học.", "Phương pháp phân tích số liệu."], correctText: "Phương pháp làm việc trong phòng thí nghiệm.", exp: "Phương pháp làm việc trong phòng thí nghiệm." },
+        { id: "p1_b2_10", topic: "Bài 2", text: "Để đánh giá ảnh hưởng của nhiệt độ đến sự nảy mầm của hạt ta có thể sử dụng phương pháp nghiên cứu", options: ["làm việc trong phòng TN.", "thực nghiệm khoa học.", "giải phẫu.", "quan sát."], correctText: "thực nghiệm khoa học.", exp: "Tác động có chủ đích yếu tố nhiệt độ là phương pháp thực nghiệm khoa học." },
+        { id: "p1_b2_11", topic: "Bài 2", text: "Để thực hiện nghiên cứu tìm hiểu cấu tạo cơ thể người. Người nghiên cứu cần sử dụng phương pháp nghiên cứu nào sau đây?", options: ["Phương pháp thực nghiệm khoa học.", "Phương pháp quan sát.", "Phương pháp làm trong phòng thí nghiệm.", "Phương pháp trải nghiệm thực địa."], correctText: "Phương pháp quan sát.", exp: "Sử dụng phương pháp quan sát mô hình/tranh ảnh." },
+        { id: "p1_b2_12", topic: "Bài 2", text: "Để ghi nhận lại đặc điểm về cơ quan sinh dưỡng và cơ quan sinh sản của thực vật, từ đó tiến hành phân loại thực vật cần sử dụng phương pháp nghiên cứu nào sau đây?", options: ["Phương pháp quan sát.", "Phương pháp làm việc trong phòng thí nghiệm.", "Phương pháp lai hữu tính.", "Phương pháp thực nghiệm khoa học."], correctText: "Phương pháp quan sát.", exp: "Quan sát đặc điểm hình thái cơ quan sinh dưỡng và sinh sản." },
+        { id: "p1_b2_13", topic: "Bài 2", text: "Để nghiên cứu ảnh hưởng của nước lên sự sinh trưởng của cây trồng, bạn An thiết kế 2 chậu cây: ở chậu thí nghiệm, tưới đủ nước; ở chậu đối chứng, không tưới nước. Mô tả này thể hiện bước nào trong tiến trình nghiên cứu khoa học?", options: ["Quan sát, thu thập dữ liệu.", "Đặt câu hỏi.", "Thiết kế và tiến hành thí nghiệm kiểm chứng.", "Phân tích KQ nghiên cứu và xử lí dữ liệu."], correctText: "Thiết kế và tiến hành thí nghiệm kiểm chứng.", exp: "Thiết kế 2 lô đối chứng và thí nghiệm thuộc bước thiết kế và tiến hành thí nghiệm kiểm chứng." },
+        { id: "p1_b2_14", topic: "Bài 2", text: "Thành tựu nào sau đây thuộc về tin sinh học?", options: ["Tìm kiếm các gene trong hệ gene và so sánh các hệ gene của các loài với nhau để tìm hiểu mối quan hệ tiến hóa giữa các loài sinh vật.", "Tìm ra vaccine phòng chống nhiều bệnh như viêm gan B, covid-19, ung thư cổ tử cung.", "Lai tạo thành công nhiều giống cây trồng, vật nuôi có năng suất cao và phẩm chất tốt.", "Tìm ra nhiều giống vi sinh vật có khả năng phân hủy các chất gây ô nhiễm môi trường."], correctText: "Tìm kiếm các gene trong hệ gene và so sánh các hệ gene của các loài với nhau để tìm hiểu mối quan hệ tiến hóa giữa các loài sinh vật.", exp: "Thành tựu của tin sinh học." },
+        { id: "p1_b2_15", topic: "Bài 2", text: "Để kiểm tra giả thuyết \"Nếu đặt chậu cây ở một nơi bất kì thì thân cây sẽ phát triển cong về phía có ánh sáng\", người ta tiến hành thí nghiệm trồng hai chậu cây cùng loài ở hai vị trí khác nhau (gần cửa sổ, góc cầu thang). Hoạt động này thuộc bước nào trong tiến trình nghiên cứu môn Sinh học?", options: ["Quan sát và đặt câu hỏi nghiên cứu.", "Thiết kế và tiến hành thí nghiệm.", "Điều tra, khảo sát thực địa.", "Xây dựng giả thuyết nghiên cứu."], correctText: "Thiết kế và tiến hành thí nghiệm.", exp: "Hoạt động tạo thí nghiệm chứng minh cho giả thuyết." },
+        { id: "p1_b2_16", topic: "Bài 2", text: "Trong công tác điều tra vụ án hình sự, các pháp y thu thập vật chứng (dấu vân tay, mẫu nước bọt,…) tại hiện trường vụ án, sau đó kiểm tra DNA bằng các phương pháp nghiên cứu lần lượt là", options: ["phương pháp quan sát và phương pháp làm việc trong phòng thí nghiệm.", "phương pháp thực nghiệm khoa học và phương pháp làm việc trong phòng thí nghiệm.", "phương pháp quan sát và phương pháp thực nghiệm khoa học.", "phương pháp quan sát và p.pháp làm việc trong phòng thí nghiệm, thực nghiệm khoa học."], correctText: "phương pháp quan sát và phương pháp làm việc trong phòng thí nghiệm.", exp: "Quan sát tại hiện trường và làm việc trong phòng thí nghiệm để kiểm tra DNA." },
+        { id: "p1_b2_17", topic: "Bài 2", imageKey: "b2_process", text: "Đâu là tiến trình theo đúng các bước nghiên cứu khoa học?", options: ["Hình thành giả thuyết khoa học → Quan sát và đặt câu hỏi → Kiểm tra giả thuyết khoa học → Làm báo cáo kết quả nghiên cứu", "Kiểm tra giả thuyết khoa học → Quan sát và đặt câu hỏi → Hình thành giả thuyết khoa học → Làm báo cáo kết quả nghiên cứu", "Quan sát và đặt câu hỏi → Hình thành giả thuyết khoa học → Kiểm tra giả thuyết khoa học → Làm báo cáo kết quả nghiên cứu", "Hình thành giả thuyết khoa học → Quan sát và đặt câu hỏi → Làm báo cáo kết quả nghiên cứu → Kiểm tra giả thuyết khoa học"], correctText: "Quan sát và đặt câu hỏi → Hình thành giả thuyết khoa học → Kiểm tra giả thuyết khoa học → Làm báo cáo kết quả nghiên cứu", exp: "Bước 1: Quan sát và đặt câu hỏi → Bước 2: Hình thành giả thuyết → Bước 3: Kiểm tra giả thuyết → Bước 4: Báo cáo." },
+
+        // Bài 3 (20 câu)
+        { id: "p1_b3_1", topic: "Bài 3", text: "Các cấp độ tổ chức sống thể hiện được các đặc trưng sống cơ bản như", options: ["chuyển hóa vật chất và năng lượng, sinh trưởng và phát triển, sinh sản, cảm ứng,…", "chuyển hóa vật chất, sinh trưởng và phát triển, sinh sản, cảm ứng,…", "chuyển hóa vật chất và năng lượng, phát triển, sinh sản, cảm ứng,…", "chuyển hóa vật chất và năng lượng, sinh trưởng và phát triển, sinh sản,…"], correctText: "chuyển hóa vật chất và năng lượng, sinh trưởng và phát triển, sinh sản, cảm ứng,…", exp: "Đặc trưng sống cơ bản của các cấp độ tổ chức sống." },
+        { id: "p1_b3_2", topic: "Bài 3", text: "Cấp độ tổ chức nhỏ nhất trong cấp độ tổ chức sống là gì?", options: ["Nguyên tử.", "Phân tử.", "Tế bào.", "Hợp tử."], correctText: "Tế bào.", exp: "Tế bào là cấp độ tổ chức sống nhỏ nhất." },
+        { id: "p1_b3_3", topic: "Bài 3", text: "Trong các cấp độ sau đây, cấp độ nào là lớn nhất?", options: ["Tế bào.", "Quần xã.", "Quần thể.", "Bào quan."], correctText: "Quần xã.", exp: "Quần xã lớn hơn quần thể, tế bào, bào quan." },
+        { id: "p1_b3_4", topic: "Bài 3", text: "Tổ chức sống nào sau đây là bào quan?", options: ["Tim.", "Phổi.", "Lục lạp.", "Não."], correctText: "Lục lạp.", exp: "Lục lạp là bào quan trong tế bào thực vật." },
+        { id: "p1_b3_5", topic: "Bài 3", text: "Các cấp tổ chức cơ bản theo thứ tự đúng là", options: ["tế bào, cơ thể, quần xã, quần thể, hệ sinh thái.", "tế bào, quần thể, cơ thể, quần xã, hệ sinh thái.", "tế bào, cơ thể, quần thể, quần xã, hệ sinh thái.", "cơ thể, quần thể, quần xã, tế bào, hệ sinh thái."], correctText: "tế bào, cơ thể, quần thể, quần xã, hệ sinh thái.", exp: "Tế bào → cơ thể → quần thể → quần xã → hệ sinh thái." },
+        { id: "p1_b3_6", topic: "Bài 3", text: "Đơn vị tổ chức cơ sở của mọi sinh vật là", options: ["các đại phân tử.", "tế bào.", "mô.", "cơ quan."], correctText: "tế bào.", exp: "Tế bào là đơn vị tổ chức cơ sở của mọi sinh vật." },
+        { id: "p1_b3_7", topic: "Bài 3", text: "Căn cứ chủ yếu để coi tế bào là đơn vị cơ bản của sự sống là vì chúng", options: ["có cấu tạo phức tạp.", "có cấu tạo đơn giản.", "được cấu tạo bởi nhiều bào quan.", "biểu hiện đầy đủ các đặc tính của sự sống."], correctText: "biểu hiện đầy đủ các đặc tính của sự sống.", exp: "Tế bào biểu hiện đầy đủ các đặc tính của sự sống." },
+        { id: "p1_b3_8", topic: "Bài 3", text: "Cấp tổ chức sống nào dưới đây bao hàm các cấp tổ chức sống còn lại?", options: ["Cơ thể.", "Tế bào.", "Bào quan.", "Cơ quan."], correctText: "Cơ thể.", exp: "Cơ thể bao hàm cơ quan, tế bào, bào quan." },
+        { id: "p1_b3_9", topic: "Bài 3", text: "Tập hợp sinh vật nào sau đây là quần xã sinh vật?", options: ["Tập hợp những con gà tre sống trong một khu vườn.", "Tập hợp những con tôm càng trong một vuông tôm.", "Tập hợp những con Sếu đầu đỏ ở vườn quốc gia Chàm chim.", "Tập hợp những sinh vật sống trong rừng U Minh Thượng."], correctText: "Tập hợp những sinh vật sống trong rừng U Minh Thượng.", exp: "Gồm nhiều quần thể thuộc các loài khác nhau sống trong rừng U Minh Thượng." },
+        { id: "p1_b3_10", topic: "Bài 3", imageKey: "b3_cell", text: "Hình dưới biểu hiện cấp độ tổ chức nào trong các cấp độ tổ chức cơ bản của thế giới sống?", options: ["Quần thể", "Tế bào.", "Hệ cơ quan.", "Bào quan."], correctText: "Tế bào.", exp: "Hình biểu diễn cấu trúc một tế bào." },
+        { id: "p1_b3_11", topic: "Bài 3", imageKey: "b3_mitochondria", text: "Hình dưới biểu hiện cấp độ tổ chức nào trong các cấp độ tổ chức của thế giới sống?", options: ["Tế bào.", "Quần thể.", "Bào quan.", "Hệ cơ quan."], correctText: "Bào quan.", exp: "Hình biểu diễn bào quan Ti thể." },
+        { id: "p1_b3_12", topic: "Bài 3", imageKey: "b3_heart", text: "Hình dưới biểu hiện cấp độ tổ chức nào trong các cấp độ tổ chức của thế giới sống?", options: ["Tế bào.", "Hệ cơ quan.", "Bào quan.", "Cơ quan."], correctText: "Cơ quan.", exp: "Quả tim thuộc cấp độ Cơ quan." },
+        { id: "p1_b3_13", topic: "Bài 3", imageKey: "b3_dog", text: "Hình dưới biểu hiện cấp độ tổ chức nào trong các cấp độ tổ chức của thế giới sống?", options: ["Cơ thể.", "Cơ quan.", "Tế bào.", "Quần thể."], correctText: "Cơ thể.", exp: "Cá thể chó thuộc cấp độ Cơ thể." },
+        { id: "p1_b3_14", topic: "Bài 3", text: "Quần xã sinh vật là", options: ["tập hợp nhiều quần thể của các loài khác nhau.", "tập hợp nhiều quần thể cùng loài.", "tập hợp các cá thể cùng loài.", "tập hợp cá thể của hai loài sống ở hai nơi."], correctText: "tập hợp nhiều quần thể của các loài khác nhau.", exp: "Quần xã gồm nhiều quần thể của các loài khác nhau." },
+        { id: "p1_b3_15", topic: "Bài 3", text: "Thứ tự theo nguyên tắc thứ bậc là: 1. cơ thể. 2. tế bào 3. quần thể. 4. quần xã. 5. hệ sinh thái.", options: ["2 → 1 → 3 → 4 → 5.", "1 → 2 → 3 → 4 → 5.", "5 → 4 → 3 → 2 → 1.", "2 → 3 → 4 → 5 → 1."], correctText: "2 → 1 → 3 → 4 → 5.", exp: "Tế bào (2) → Cơ thể (1) → Quần thể (3) → Quần xã (4) → Hệ sinh thái (5)." },
+        { id: "p1_b3_16", topic: "Bài 3", text: "Thế nào là hệ sinh thái?", options: ["Là tập hợp các cá thể cùng loài sống trong một không gian nhất định.", "Là tập hợp nhiều quần thể sống trong một không gian nhất định.", "Là tập hợp các cá thể cùng loài sống ở những môi trường khác nhau.", "Là sinh vật và môi trường sống của chúng tạo nên một thể thống nhất."], correctText: "Là sinh vật và môi trường sống của chúng tạo nên một thể thống nhất.", exp: "Quần xã sinh vật và môi trường sống tạo thành hệ sinh thái thống nhất." },
+        { id: "p1_b3_17", topic: "Bài 3", text: "Tổ chức sống cấp dưới sẽ làm cơ sở để hình thành nên tổ chức sống cấp cao hơn. Điều này thể hiện đặc điểm nào của các cấp tổ chức sống?", options: ["Nguyên tắc thứ bậc.", "Đặc tính nổi trội.", "Hệ thống mở, tự điều chỉnh.", "Thế giới không ngừng tiến hóa."], correctText: "Nguyên tắc thứ bậc.", exp: "Thể hiện nguyên tắc thứ bậc." },
+        { id: "p1_b3_18", topic: "Bài 3", text: "Đặc tính mà tổ chức sống cấp trên có nhưng các cấp tổ chức sống cấp dưới không có gọi là", options: ["đặc tính nổi trội.", "hệ thống mở.", "nguyên tắc thứ bậc.", "nguyên tắc bổ sung"], correctText: "đặc tính nổi trội.", exp: "Khái niệm đặc tính nổi trội." },
+        { id: "p1_b3_19", topic: "Bài 3", text: "Sự sống được tiếp nối từ thế này qua thế hệ khác là nhờ quá trình", options: ["phân bào.", "giao phối.", "nhân bản vô tính.", "sinh sản."], correctText: "sinh sản.", exp: "Nhờ quá trình sinh sản." },
+        { id: "p1_b3_20", topic: "Bài 3", text: "Tập hợp nhiều tế bào cùng loại và cùng thực hiện một chức năng nhất định tạo thành", options: ["hệ cơ quan.", "mô.", "cơ thể.", "cơ quan."], correctText: "mô.", exp: "Tạo thành mô." },
+
+        // Bài 4 (32 câu: 13 Biết + 19 Thông hiểu)
+        { id: "p1_b4_1", topic: "Bài 4", text: "Cho đoạn thông tin sau: Mọi cơ thể sống đều được cấu tạo từ (1) …………. Cơ thể đa bào gồm nhiều tế bào phân hóa thành các (2) ……………., (3) ………… khác nhau cùng phối hợp thực hiện tất cả các hoạt động sống của cơ thể. Điền từ thích hợp vào chỗ trống?", options: ["(1) cơ quan; (2) mô; (3) tế bào.", "(1) tế bào; (2) mô; (3) cơ quan.", "(1) mô; (2) cơ quan; (3) tế bào.", "(1) mô; (2) tế bào; (3) cơ quan."], correctText: "(1) tế bào; (2) mô; (3) cơ quan.", exp: "(1) tế bào; (2) mô; (3) cơ quan." },
+        { id: "p1_b4_2", topic: "Bài 4", text: "Tại sao nói tế bào là đơn vị cấu trúc và chức năng của cơ thể con người?", options: ["Một số cơ quan trong cơ thể người được cấu tạo bởi tế bào.", "Các hoạt động sống của tế bào là cơ sở cho các hoạt động sống của cơ thể.", "Khi toàn bộ các tế bào bị chết thì cơ thể vẫn hoạt động bình thường.", "Cơ thể sống chỉ có một tế bào thực hiện mọi chức năng sống."], correctText: "Các hoạt động sống của tế bào là cơ sở cho các hoạt động sống của cơ thể.", exp: "Các hoạt động sống của tế bào là cơ sở cho các hoạt động sống của cơ thể." },
+        { id: "p1_b4_3", topic: "Bài 4", text: "Tế bào là đơn vị cấu trúc của cơ thể vì", options: ["tế bào là đơn vị có kích thước nhỏ nhất.", "mọi cơ thể sống đều được cấu tạo từ tế bào.", "mọi hoạt động sống đều được thực hiện nhờ tế bào.", "tế bào có chức năng sinh sản."], correctText: "mọi cơ thể sống đều được cấu tạo từ tế bào.", exp: "Mọi cơ thể sống đều được cấu tạo từ tế bào." },
+        { id: "p1_b4_4", topic: "Bài 4", text: "Vì sao tế bào được coi là đơn vị cơ bản của sự sống?", options: ["Vì có nhiều hình dạng khác nhau để thích nghi với các chức năng khác nhau.", "Vì có đầy đủ hết các loại bào quan cần thiết.", "Vì có thể thực hiện đầy đủ các hoạt động sống cơ bản.", "Nó có nhiều kích thước khác nhau để đảm nhiệm các vai trò khác nhau."], correctText: "Vì có thể thực hiện đầy đủ các hoạt động sống cơ bản.", exp: "Vì tế bào thực hiện đầy đủ các hoạt động sống cơ bản." },
+        { id: "p1_b4_5", topic: "Bài 4", text: "Phát biểu nào sau đây là không đúng với nội dung của học thuyết tế bào?", options: ["Tế bào là đơn vị cơ sở của sự sống.", "Các tế bào được sinh ra từ các tế bào có trước.", "Tất cả các sinh vật đều được cấu tạo bởi nhiều tế bào.", "Các tế bào đều được cấu tạo từ những thành phần hóa học tương tự như nhau."], correctText: "Tất cả các sinh vật đều được cấu tạo bởi nhiều tế bào.", exp: "Sai vì sinh vật đơn bào chỉ cấu tạo từ 1 tế bào." },
+        { id: "p1_b4_6", topic: "Bài 4", text: "Nội dung nào trong các nội dung sau đây thuộc học thuyết tế bào\n(1) Tất cả các sinh vật đều được cấu tạo từ tế bào\n(2) Các tế bào là đơn vị cơ sở của cơ thể sống\n(3) Tất cả các tế bào được sinh ra từ tế bào trước đó\n(4) Tất cả các tế bào đều có hình thái giống nhau.", options: ["(1), (2), (3)", "(1), (3), (4).", "(2), (3), (4)", "(1), (2), (4)"], correctText: "(1), (2), (3)", exp: "Gồm (1), (2), (3)." },
+        { id: "p1_b4_7", topic: "Bài 4", text: "Trong các cơ thể sống, thành phần chủ yếu là", options: ["chất hữu cơ.", "chất vô cơ.", "nước.", "vitamin."], correctText: "nước.", exp: "Nước là thành phần chủ yếu." },
+        { id: "p1_b4_8", topic: "Bài 4", text: "Nhận định nào sau đây là Sai, khi nói về các nguyên tố hóa học trong tế bào sống?", options: ["Nhóm nguyên tố chiếm số lượng chất khô nhiều nhất là C,H,O,N.", "Nguyên tố vi lượng là nguyên tố có tỉ lệ lớn hơn 0,01% .", "Nguyên tố đa lượng tham gia cấu tạo nên các đại phân tử hữu cơ.", "Có khoảng 25 nguyên tố có vai trò quan trọng đối với sự sống."], correctText: "Nguyên tố vi lượng là nguyên tố có tỉ lệ lớn hơn 0,01% .", exp: "Nguyên tố vi lượng chiếm nhỏ hơn 0,01%." },
+        { id: "p1_b4_9", topic: "Bài 4", text: "Phần lớn các nguyên tố đa lượng cấu tạo nên", options: ["lipid, enzyme.", "protein, vitamin.", "đại phân tử hữu cơ.", "glucose, tinh bột, vitamin."], correctText: "đại phân tử hữu cơ.", exp: "Nguyên tố đa lượng cấu tạo nên các đại phân tử hữu cơ." },
+        { id: "p1_b4_10", topic: "Bài 4", text: "Nguyên tố hóa học tạo nên sự đa dạng của các hợp chất hữu cơ là", options: ["carbon", "oxygen", "hydrogen", "nitrogen"], correctText: "carbon", exp: "Carbon tạo nên sự đa dạng của các hợp chất hữu cơ." },
+        { id: "p1_b4_11", topic: "Bài 4", text: "Liên kết hóa học giữa các nguyên tử trong phân tử nước là", options: ["liên kết cộng hóa trị.", "liên kết hydrogen.", "liên kết ion.", "liên kết phosphodieste"], correctText: "liên kết cộng hóa trị.", exp: "Giữa O và H trong phân tử nước là liên kết cộng hóa trị." },
+        { id: "p1_b4_12", topic: "Bài 4", text: "Trong cơ thể sinh vật, nguyên tố chiếm tỉ lệ cao nhất là", options: ["Carbon.", "Hydrogen.", "Oxygen", "Nitrogen."], correctText: "Oxygen", exp: "Oxygen chiếm tỉ lệ khối lượng cao nhất trong cơ thể tươi." },
+        { id: "p1_b4_13", topic: "Bài 4", text: "Các phân tử phân cực của nước là do", options: ["đôi êlectron trong mối liên kết O – H bị kéo lệch về phía oxygen.", "đôi êlectron trong mối liên kết O – H bị kéo lệch về phía hidro.", "hai phân tử nước gần nhau có xu hướng liên kết với các phân tử nước.", "khối lượng phân tử của oxi lớn hơn khối lượng phân tử của hidro."], correctText: "đôi êlectron trong mối liên kết O – H bị kéo lệch về phía oxygen.", exp: "Đôi electron dùng chung bị kéo lệch về phía oxygen." },
+        { id: "p1_b4_14", topic: "Bài 4", text: "Nước là dung môi hoà tan nhiều chất trong cơ thể sống vì chúng có", options: ["nhiệt dung riêng cao.", "lực gắn kết.", "nhiệt bay hơi cao.", "tính phân cực."], correctText: "tính phân cực.", exp: "Do tính phân cực của phân tử nước." },
+        { id: "p1_b4_15", topic: "Bài 4", text: "Cơ thể chỉ cần các nguyên tố vi lượng với một lượng rất nhỏ là vì", options: ["phần lớn nguyên tố vi lượng đã có trong các hợp chất tế bào.", "chức năng chính của nguyên tố vi lượng là hoạt hóa các enzym.", "nguyên tố vi lượng đóng vai trò thứ yếu đối với cơ thể.", "nguyên tố vi lượng chỉ cần cho một vài giai đoạn sinh trưởng nhất định của cơ thể."], correctText: "chức năng chính của nguyên tố vi lượng là hoạt hóa các enzym.", exp: "Chức năng chính của vi lượng là cấu tạo và hoạt hóa các enzyme." },
+        { id: "p1_b4_16", topic: "Bài 4", text: "Các chuyên gia dinh dưỡng luôn khuyên tất cả mọi người phải tăng cường ăn rau xanh. Vai trò quan trọng trong việc ăn rau xanh là", options: ["chống các bệnh về tim mạch và cao huyết áp.", "giúp cơ thể tiêu hóa thức ăn được tốt hơn.", "cung cấp vitamin và các nguyên tố vi lượng.", "tiết kiệm về mặt kinh tế vì rau xanh có giá rẻ"], correctText: "cung cấp vitamin và các nguyên tố vi lượng.", exp: "Rau xanh cung cấp nhiều vitamin và nguyên tố vi lượng." },
+        { id: "p1_b4_17", topic: "Bài 4", text: "Iod là nguyên tố vi lượng tham gia vào thành phần hormon của", options: ["tuyến thượng thận.", "tuyến yên.", "tuyến tụy.", "tuyến giáp."], correctText: "tuyến giáp.", exp: "Iod cấu tạo hormone thyroxine của tuyến giáp." },
+        { id: "p1_b4_18", topic: "Bài 4", text: "Nước có thể tạo thành dòng liên tục do?", options: ["Các phân tử nước liên kết hydrogen với nhau tạo thành dòng.", "Nguyên tử H và O liên kết cộng hóa trị với nhau tạo thành dòng.", "Các phân tử nước liên kết với các phân tử khác tạo thành dòng.", "Phân tử nước liên kết với không khí tạo thành dòng."], correctText: "Các phân tử nước liên kết hydrogen với nhau tạo thành dòng.", exp: "Các phân tử nước liên kết hydrogen với nhau." },
+        { id: "p1_b4_19", topic: "Bài 4", text: "Nguyên tử carbon là cơ sở hình thành vô số hợp chất hữu cơ là do", options: ["nó có bốn electron ở lớp ngoài cùng.", "nó có nhiều hóa trị", "nó có thể cho hoặc thu nhận các eclectron.", "nó là nguyên tố đa lượng"], correctText: "nó có bốn electron ở lớp ngoài cùng.", exp: "Carbon có 4 electron lớp ngoài cùng." },
+        { id: "p1_b4_20", topic: "Bài 4", text: "Vì sao các nguyên tố vi lượng có vai trò quan trọng đối với cơ thể?", options: ["Chiếm khối lượng nhỏ.", "Giúp tăng cường hệ miễn dịch cho cơ thể.", "Cơ thể sinh vật không thể tự tổng hợp các chất ấy.", "Là thành phần cấu trúc bắt buộc của nhiều hệ enzyme."], correctText: "Là thành phần cấu trúc bắt buộc của nhiều hệ enzyme.", exp: "Là thành phần cấu trúc bắt buộc của nhiều hệ enzyme." },
+        { id: "p1_b4_21", topic: "Bài 4", text: "Khi cơ thể chúng ta bị thiếu máu cần bổ sung thực phẩm giàu nguyên tố", options: ["nitrogen.", "calcium.", "kẽm", "sắt"], correctText: "sắt", exp: "Sắt cấu tạo hemoglobin hồng cầu." },
+        { id: "p1_b4_22", topic: "Bài 4", text: "Buổi trưa nắng nóng, chúng ta không nên tưới nước lên lá cây sẽ làm lá dễ bị héo do", options: ["nước hấp thụ nhiệt làm nóng lá cây.", "cây thoát nước mạnh.", "cây không hấp thụ nước qua lá.", "Nước thải nhiệt làm nóng lá."], correctText: "nước hấp thụ nhiệt làm nóng lá cây.", exp: "Nước hấp thụ nhiệt làm nóng lá cây." },
+        { id: "p1_b4_23", topic: "Bài 4", text: "Khi đặt một cốc nước đầy trong ngăn tủ đông, sau 1 thời gian thì hiện tượng gì xảy ra?", options: ["Nước chuyển từ thể lỏng sang thể rắn và cốc nước ít hơn lúc đầu", "Nước chuyển từ thể lỏng sang thể rắn và nước tràn ra ngoài", "Nước chuyển từ thể lỏng sang thể rắn và cốc nước không thay đổi", "Nước chuyển từ thể lỏng sang thể rắn."], correctText: "Nước chuyển từ thể lỏng sang thể rắn và nước tràn ra ngoài", exp: "Nước đông đá tăng thể tích và tràn ra ngoài." },
+        { id: "p1_b4_24", topic: "Bài 4", text: "Ngoài chức năng bài tiết chất thải thì hiện tượng ra mồ hôi ở cơ thể người và động vật còn có ý nghĩa", options: ["giải phóng nhiệt.", "giảm trọng lượng của cơ thể.", "giải phóng nước.", "giải phóng năng lượng ATP."], correctText: "giải phóng nhiệt.", exp: "Giải phóng nhiệt điều hòa thân nhiệt." },
+        { id: "p1_b4_25", topic: "Bài 4", text: "Chức năng của carbon trong tế bào.", options: ["Dự trữ năng lượng, là vật liệu cấu trúc tế bào.", "Cấu trúc tế bào, cấu trúc các enzym.", "Điều hòa trao đổi chất, tham gia cấu tạo tế bào chất.", "Thu nhận thông tin và bảo vệ cơ thể."], correctText: "Dự trữ năng lượng, là vật liệu cấu trúc tế bào.", exp: "Dự trữ năng lượng, là vật liệu cấu trúc tế bào." },
+        { id: "p1_b4_26", topic: "Bài 4", imageKey: "b4_water_molecule", text: "Liên kết hóa học giữa các nguyên tử trong phân tử nước là:", options: ["liên kết cộng hóa trị.", "liên kết hydrogen.", "liên kết ion.", "liên kết photphodieste."], correctText: "liên kết cộng hóa trị.", exp: "Liên kết cộng hóa trị giữa O và H." },
+        { id: "p1_b4_27", topic: "Bài 4", imageKey: "b4_water_network", text: "Liên kết hóa học giữa các phân tử nước là", options: ["liên kết cộng hóa trị.", "liên kết hydrogen.", "liên kết ion.", "liên kết photphodieste."], correctText: "liên kết hydrogen.", exp: "Liên kết giữa các phân tử nước là liên kết hydrogen." },
+        { id: "p1_b4_28", topic: "Bài 4", text: "Nguyên tố quan trọng trong việc tạo nên sự đa dạng của vật chất hữu cơ là:", options: ["Carbon.", "Hydro.", "Oxy.", "Nitrogen."], correctText: "Carbon.", exp: "Carbon tạo nên sự đa dạng của vật chất hữu cơ." },
+        { id: "p1_b4_29", topic: "Bài 4", imageKey: "b4_water_polarity", text: "Tính phân cực của nước là do", options: ["đôi electron trong mối liên kết O – H bị kéo lệch về phía oxygen.", "đôi electron trong mối liên kết O – H bị kéo lệch về phía hydrogen.", "xu hướng các phân tử nước.", "khối lượng phân tử của oxygen lớn hơn khối lượng phân tử của hydrogen."], correctText: "đôi electron trong mối liên kết O – H bị kéo lệch về phía oxygen.", exp: "Đôi electron trong mối liên kết O – H bị kéo lệch về phía oxygen." },
+        { id: "p1_b4_30", topic: "Bài 4", imageKey: "b4_water_10445", text: "Đặc điểm về liên kết hydrogen của phân tử nước:", options: ["Đầu Oxygen của phân tử nước mang điện tích âm.", "Đầu Hydrogen của phân tử nước mang điện tích âm.", "Đầu Oxygen của phân tử nước mang điện tích dương.", "Nhờ liên kết hydrogen mà phân tử nước không phân cực."], correctText: "Đầu Oxygen của phân tử nước mang điện tích âm.", exp: "Đầu Oxygen mang điện tích âm, đầu Hydrogen mang điện tích dương." },
+        { id: "p1_b4_31", topic: "Bài 4", text: "Nước đá có đặc điểm nào sau đây?", options: ["Các liên kết hydrogen luôn bị bẻ gãy và tái tạo liên tục.", "Các liên kết hydrogen bị bẻ gãy nhưng không được tái tạo.", "Các liên kết hydrogen luôn bền vững và tạo nên cấu trúc mạng tinh thể.", "Không tồn tại các liên kết hydrogen."], correctText: "Các liên kết hydrogen luôn bền vững và tạo nên cấu trúc mạng tinh thể.", exp: "Các liên kết hydrogen luôn bền vững ở trạng thái nước đá." },
+        { id: "p1_b4_32", topic: "Bài 4", text: "Nội dung nào sau đây không đúng với vai trò của nước trong cơ thể?", options: ["Nước tham gia vào quá trình chuyển hóa vật chất.", "Nước là thành phần cấu trúc của tế bào.", "Nước cung cấp năng lượng cho tế bào hoạt động.", "Nước trong tế bào luôn được đổi mới."], correctText: "Nước cung cấp năng lượng cho tế bào hoạt động.", exp: "Nước không cung cấp năng lượng cho tế bào." },
+
+        // Bài 5 (42 câu: 18 Biết + 24 Hiểu)
+        { id: "p1_b5_1", topic: "Bài 5", text: "Các nguyên tố hoá học cấu tạo của carbohidrat là", options: ["carbon và hidrogen.", "hidrogen và oxigen.", "oxigen và carbon.", "carbon, hidrogen và oxigen."], correctText: "carbon, hidrogen và oxigen.", exp: "C, H, O." },
+        { id: "p1_b5_2", topic: "Bài 5", text: "Chất nào dưới đây thuộc loại đường polysaccharide?", options: ["Mantose.", "Disaccharide.", "Tinh bột.", "Ribose."], correctText: "Tinh bột.", exp: "Tinh bột là polysaccharide." },
+        { id: "p1_b5_3", topic: "Bài 5", text: "Đường fructose thuộc loại nào?", options: ["Đường mía.", "Đường phức.", "Đường sữa.", "Đường trái cây."], correctText: "Đường trái cây.", exp: "Fructose là đường trái cây." },
+        { id: "p1_b5_4", topic: "Bài 5", text: "Một phân tử mỡ bao gồm", options: ["1 phân tử glycecol với 1 acid béo.", "1 phân tử glycerol với 2 acid béo.", "1 phân tử glycerol với 3 acid béo.", "3 phân tử glycerol với 3 acid béo."], correctText: "1 phân tử glycerol với 3 acid béo.", exp: "1 phân tử glycerol liên kết với 3 acid béo." },
+        { id: "p1_b5_5", topic: "Bài 5", text: "Chất nào sau đây không được xếp vào nhóm đường polysaccharide?", options: ["Tinh bột.", "Glycogen.", "Cellulose.", "Glucose."], correctText: "Glucose.", exp: "Glucose là monosaccharide." },
+        { id: "p1_b5_6", topic: "Bài 5", text: "Hai phân tử đường đơn liên kết với nhau tạo phân tử đường đôi bằng loại liên kết nào sau đây?", options: ["Liên kết peptid.", "Liên kết glicosidic.", "Liên kết hoá trị.", "Liên kết hidrogen."], correctText: "Liên kết glicosidic.", exp: "Liên kết glycosidic." },
+        { id: "p1_b5_7", topic: "Bài 5", text: "Phospholipid có chức năng chủ yếu là", options: ["tham gia cấu tạo nhân của tế bào.", "là thành phần cấu tạo của màng tế bào.", "là thành phần của máu ở động vật.", "cấu tạo nên chất diệp lục ở lá cây."], correctText: "là thành phần cấu tạo của màng tế bào.", exp: "Phospholipid cấu tạo màng tế bào." },
+        { id: "p1_b5_8", topic: "Bài 5", text: "Carbohidrat là tên gọi dùng để chỉ nhóm chất nào sau đây?", options: ["Đường", "Đạm", "Mỡ", "Chất hữu cơ"], correctText: "Đường", exp: "Carbohydrate chỉ nhóm chất đường bột." },
+        { id: "p1_b5_9", topic: "Bài 5", text: "Chất nào sau đây tan được trong nước?", options: ["Vitamin A.", "Vitamin C.", "Phôtpholipit.", "Stêrôit."], correctText: "Vitamin C.", exp: "Vitamin C tan trong nước." },
+        { id: "p1_b5_10", topic: "Bài 5", text: "Loại liên kết hoá học giữa acid béo và glycerol trong phân tử triglycerid là:", options: ["liên kết hidrogen", "liên kết peptid", "Liên kết este", "Liên kết hoá trị"], correctText: "Liên kết este", exp: "Liên kết este." },
+        { id: "p1_b5_11", topic: "Bài 5", text: "Loại đường cấu tạo nên vỏ tôm, cua được gọi là gì?", options: ["Glucose.", "Chitin.", "Saccarose.", "Fructose."], correctText: "Chitin.", exp: "Chitin cấu tạo vỏ tôm, cua." },
+        { id: "p1_b5_12", topic: "Bài 5", text: "Đơn phân của protein là", options: ["nucleosome", "acid amin.", "nucleotid.", "acid béo."], correctText: "acid amin.", exp: "Đơn phân của protein là acid amin." },
+        { id: "p1_b5_13", topic: "Bài 5", text: "Liên kết hóa học chủ yếu giữa các acid amin trong phân tử protein là", options: ["liên kết hóa trị.", "liên kết hidrogen.", "liên kết đisulfua.", "liên kết peptid."], correctText: "liên kết peptid.", exp: "Liên kết peptide." },
+        { id: "p1_b5_14", topic: "Bài 5", text: "Chức năng của DNA?", options: ["Dự trữ năng lượng cho tế bào.", "Mang, bảo quản và truyền đạt thông tin di truyền.", "Vận chuyển amino acid đến ribosome.", "Xúc tác cho các phản ứng hóa học."], correctText: "Mang, bảo quản và truyền đạt thông tin di truyền.", exp: "Mang, bảo quản và truyền đạt thông tin di truyền." },
+        { id: "p1_b5_15", topic: "Bài 5", text: "Thành phần nào sau đây không có trong cấu trúc của DNA?", options: ["Đường pentose.", "Nitrogeneous base.", "Gốc phosphate.", "Đường deoxyribose."], correctText: "Đường pentose.", exp: "Theo đáp án đề cương: Đường pentose (ribose)." },
+        { id: "p1_b5_16", topic: "Bài 5", text: "Điều nào đúng khi nói về liên kết bổ sung giữa các nucleotide trong phân tử DNA?", options: ["A liên kết T bằng 2 liên kết hydrogen.", "T liên kết C bằng 2 liên kết hydrogen.", "C liên kết G bằng 2 liên kết hydrogen.", "G liên kết A bằng 3 liên kết hydrogen."], correctText: "A liên kết T bằng 2 liên kết hydrogen.", exp: "A liên kết T bằng 2 liên kết hydrogen." },
+        { id: "p1_b5_17", topic: "Bài 5", text: "Đơn phân cấu tạo của DNA là?", options: ["Amino acid.", "Deoxyribonucleic acid.", "Ribonucleic acid.", "Nucleotide."], correctText: "Nucleotide.", exp: "Nucleotide." },
+        { id: "p1_b5_18", topic: "Bài 5", text: "Trong cấu trúc không gian của phân tử DNA, các nucleotide giữa 2 mạch liên kết với nhau bằng các", options: ["liên kết glicoside.", "liên kết phosphodiester.", "liên kết hydrogen.", "liên kết peptid."], correctText: "liên kết hydrogen.", exp: "Liên kết hydrogen." },
+        { id: "p1_b5_19", topic: "Bài 5", text: "Lipid có đặc tính", options: ["tan rất ít trong nước.", "tan nhiều trong nước.", "không tan trong nước.", "có ái lực rất mạnh với nước."], correctText: "không tan trong nước.", exp: "Lipid không tan trong nước." },
+        { id: "p1_b5_20", topic: "Bài 5", text: "Phát biểu nào sau đây có nội dung đúng?", options: ["Trong mỡ chứa nhiều acid no.", "Phân tử dầu có chứa 2 glycerol.", "Trong mỡ có chứa 1glyxerol và 2 acid béo.", "Dầu hoà tan không giới hạn trong nước."], correctText: "Trong mỡ chứa nhiều acid no.", exp: "Trong mỡ chứa nhiều acid béo no." },
+        { id: "p1_b5_21", topic: "Bài 5", text: "Phát biểu nào sau đây có nội dung đúng?", options: ["Trong dầu chứa nhiều acid béo không no.", "Phân tử dầu có chứa 2 glycerol.", "Trong mỡ có chứa 1 glycerol và 2 acid béo.", "Dầu hoà tan không giới hạn trong nước."], correctText: "Trong dầu chứa nhiều acid béo không no.", exp: "Trong dầu chứa nhiều acid béo không no." },
+        { id: "p1_b5_22", topic: "Bài 5", text: "Khi phân giải phân tử đường lactose, có thể thu được kết quả nào sau đây?", options: ["Hai phân tử đường glucose.", "Một phân tử glucose và 1 phân tử galactose.", "Hai phân tử đường fructose.", "Một phân tử maltose và 1 phân tử galactose."], correctText: "Một phân tử glucose và 1 phân tử galactose.", exp: "1 phân tử glucose và 1 phân tử galactose." },
+        { id: "p1_b5_23", topic: "Bài 5", text: "Phát biểu nào sau đây có nội dung đúng?", options: ["Glucose thuộc loại polysaccharide.", "Glycogen là đường monosaccharide.", "Đường monosaccharide có cấu trúc phức tạp nhất.", "Galactose, còn được gọi là đường sữa."], correctText: "Galactose, còn được gọi là đường sữa.", exp: "Galactose còn được gọi là đường sữa." },
+        { id: "p1_b5_24", topic: "Bài 5", text: "Ở phân tử protein, sự thay đổi độ pH của môi trường đã tác động đến", options: ["các liên kết hidrogen dẫn tới làm thay đổi cấu trúc không gian.", "các liên kết peptid ở trong cấu trúc bậc 1 của prôtêin.", "các chuỗi polypeptid làm cho chúng bám chặt vào nhau.", "cấu trúc của acid amin, vì vậy làm cho protein bị thay đổi."], correctText: "các liên kết hidrogen dẫn tới làm thay đổi cấu trúc không gian.", exp: "Làm đứt các liên kết hydrogen dẫn tới thay đổi cấu trúc không gian." },
+        { id: "p1_b5_25", topic: "Bài 5", text: "Protein có tính đa dạng và đặc thù thể hiện chủ yếu ở", options: ["nhóm amin và nhóm carboxyl của các acid amin.", "nhóm R của các acid amin.", "liên kết peptid, liên kết hidrogen và các liên kết khác.", "số lượng, thành phần và trật tự sắp xếp các acid amin."], correctText: "số lượng, thành phần và trật tự sắp xếp các acid amin.", exp: "Số lượng, thành phần và trật tự sắp xếp các acid amin." },
+        { id: "p1_b5_26", topic: "Bài 5", text: "Protein thực hiện chức năng vận chuyển các chất trong cơ thể là", options: ["nhiễm sắc thể.", "hemoglobin.", "xương.", "cơ."], correctText: "hemoglobin.", exp: "Hemoglobin vận chuyển O2 và CO2." },
+        { id: "p1_b5_27", topic: "Bài 5", text: "Các loại acid amin khác nhau được phân biệt dựa vào các yếu tố nào sau đây?", options: ["Nhóm amin.", "Nhóm carboxyl.", "Gốc R-.", "Số phân tử oxigen."], correctText: "Gốc R-.", exp: "Phân biệt dựa vào gốc R-." },
+        { id: "p1_b5_28", topic: "Bài 5", text: "Protein thực hiện được chức năng của nó chủ yếu ở những bậc cấu trúc nào sau đây?", options: ["Cấu trúc bậc 1 và bậc 4.", "Cấu trúc bậc 1 và bậc 2.", "Cấu trúc bậc 2 và bậc 3.", "Cấu trúc bậc 3 và bậc 4."], correctText: "Cấu trúc bậc 3 và bậc 4.", exp: "Cấu trúc bậc 3 và bậc 4." },
+        { id: "p1_b5_29", topic: "Bài 5", text: "Cấu trúc của phân tử protein có thể bị biến tính bởi", options: ["liên kết phân cực của các phân tử nước", "nhiệt độ", "sự có mặt của khí oxigen", "sự có mặt của khí CO2"], correctText: "nhiệt độ", exp: "Bị biến tính bởi nhiệt độ." },
+        { id: "p1_b5_30", topic: "Bài 5", text: "Trong khẩu phần ăn hằng ngày nên phối hợp nhiều loại thức ăn nhằm", options: ["cung cấp được loại acid amin cần thiết.", "cung cấp đủ loại acid amin, càng nhiều loài thịt thì càng đa dạng về acid amin.", "cung cấp nhiều colagen cấu tạo nên mô liên kết, keratin cấu tạo nên lông, tóc, móng tay.", "bảo vệ cơ thể, tạo nhiều kháng thể, interferon chống vi khuẩn và virus xâm nhập vào cơ thể."], correctText: "cung cấp được loại acid amin cần thiết.", exp: "Cung cấp được các loại acid amin cần thiết." },
+        { id: "p1_b5_31", topic: "Bài 5", text: "Cấu trúc không gian bậc 2 của protein được duy trì và ổn định nhờ", options: ["các liên kết hidrogen.", "các liên kết phosphodieste.", "các liên kết cùng hoá trị.", "Các liên kết peptid."], correctText: "các liên kết hidrogen.", exp: "Nhờ các liên kết hydrogen." },
+        { id: "p1_b5_32", topic: "Bài 5", text: "Loại protein nào sau đây có chức năng điều hoà các quá trình trao đổi chất trong tế bào và cơ thể ?", options: ["protein cấu trúc.", "protein kháng thể.", "protein vận động.", "protein hormon."], correctText: "protein hormon.", exp: "Protein hormone." },
+        { id: "p1_b5_33", topic: "Bài 5", text: "Protein tham gia trong thành phần của enzyme có chức năng", options: ["xúc tác các phản ứng trao đổi chất.", "điều hoà các hoạt động trao đổi chất.", "xây dựng các mô và cơ quan của cơ thể", "cung cấp năng lượng cho hoạt động tế bào."], correctText: "xúc tác các phản ứng trao đổi chất.", exp: "Xúc tác các phản ứng trao đổi chất." },
+        { id: "p1_b5_34", topic: "Bài 5", text: "Chất nào sau đây được cấu tạo từ các acid amin?", options: ["Colesterol – tham gia cấu tạo nên màng sinh học.", "Pentose - tham gia cấu tạo nên axit nucleic trong nhân tế bào.", "Ơestrogen – hormon do buồng trứng ở nữ giới tiết ra.", "Insulin – hormon do tuyến tụy ở người tiết ra."], correctText: "Insulin – hormon do tuyến tụy ở người tiết ra.", exp: "Insulin có bản chất là protein được cấu tạo từ các acid amin." },
+        { id: "p1_b5_35", topic: "Bài 5", text: "Nếu ăn quá nhiều protein (chất đạm), cơ thể có thể mắc bệnh gì sau đây?", options: ["Bệnh gout.", "Bệnh mỡ máu.", "Bệnh tiểu đường.", "Bệnh đau dạ dày."], correctText: "Bệnh gout.", exp: "Bệnh gout." },
+        { id: "p1_b5_36", topic: "Bài 5", text: "Điểm giống nhau giữa protein và lipid là gì ?", options: ["Cấu trúc theo nguyên tắc đa phân.", "Có chức năng dự trữ và cung cấp năng lượng cho tế bào và cơ thể.", "Đều có liên kết hidrogen trong cấu trúc phân tử.", "Gồm các nguyên tố C, H, O."], correctText: "Gồm các nguyên tố C, H, O.", exp: "Đều gồm các nguyên tố C, H, O." },
+        { id: "p1_b5_37", topic: "Bài 5", text: "Cho các nhận định sau về protein, nhận định nào đúng?", options: ["Protein được cấu tạo từ các loại nguyên tố hóa học: C, H, O.", "Protein mất chức năng sinh học khi cấu trúc không gian bị phá vỡ.", "Protein ở người và động vật được tổng hợp bởi 20 loại axit amin lấy từ thức ăn.", "Protein đơn giản gồm nhiều chuỗi pôlipeptit với hàng trăm axit amin."], correctText: "Protein mất chức năng sinh học khi cấu trúc không gian bị phá vỡ.", exp: "Protein mất chức năng sinh học khi cấu trúc không gian bị phá vỡ." },
+        { id: "p1_b5_38", topic: "Bài 5", text: "Phân tử DNA và RNA khác nhau ở đặc điểm nào sau đây?", options: ["Đường pentose cấu tạo nucleotide.", "Nhóm phosphate cấu tạo nucleotide.", "Liên kết giữa các nucleotide.", "Liên kết trong nucleotide."], correctText: "Đường pentose cấu tạo nucleotide.", exp: "Khác nhau ở đường pentose (deoxyribose và ribose)." },
+        { id: "p1_b5_39", topic: "Bài 5", text: "Đặc điểm cấu tạo của RNA khác với DNA là?", options: ["đại phân tử, có cấu trúc đa phân.", "có liên kết hydrogen giữa các nucleotide.", "có một mạch polynucleotide.", "được cấu tạo từ nhiều đơn phân."], correctText: "có một mạch polynucleotide.", exp: "RNA có một mạch polynucleotide." },
+        { id: "p1_b5_40", topic: "Bài 5", text: "Base có trong phân tử RNA mà không có trong phân tử DNA?", options: ["Adenine.", "Guanine.", "Cytosine", "Uracil."], correctText: "Uracil.", exp: "Uracil (U)." },
+        { id: "p1_b5_41", topic: "Bài 5", text: "Thời gian tồn tại của các RNA phụ thuộc vào độ bền vững của phân tử được tạo ra bởi liên kết:", options: ["Liên kết hydrogen.", "Liên kết ion.", "Liên kết cộng hóa trị.", "Liên kết phosphodiester."], correctText: "Liên kết hydrogen.", exp: "Liên kết hydrogen." },
+        { id: "p1_b5_42", topic: "Bài 5", text: "Nhận định nào sau đây không đúng?", options: ["ở một số loài virus, thông tin di truyền được lưu giữ trên phân tử RNA.", "ở vi khuẩn, thông tin di truyền được lưu trữ trên 1 phân tử DNA mạch vòng, xoắn kép.", "ở SV nhân thực thông tin di truyền được lưu giữ trên các phân tử DNA mạch thẳng, xoắn kép.", "ở sinh vật nhân sơ, thông tin di truyền được lưu trữ trên 1 phân tử DNA mạch thẳng."], correctText: "ở sinh vật nhân sơ, thông tin di truyền được lưu trữ trên 1 phân tử DNA mạch thẳng.", exp: "Sai vì ở sinh vật nhân sơ DNA vùng nhân có dạng mạch vòng." },
+
+        // Bài 6 (9 câu)
+        { id: "p1_b6_1", topic: "Bài 6", text: "Khi cho iodine vào các ống nghiệm sau đây, ống nào sẽ xuất hiện màu xanh tím?", options: ["Ống chứa dịch nghiền của củ khoai tây.", "Ống chứa hồ tinh bột đang đun sôi", "Ống chứa nước thịt.", "Ống chứa mỡ động vật"], correctText: "Ống chứa dịch nghiền của củ khoai tây.", exp: "Ống chứa dịch nghiền của củ khoai tây chứa tinh bột ở nhiệt độ thường." },
+        { id: "p1_b6_2", topic: "Bài 6", text: "Thuốc thử để nhận biết sự có mặt của protein trong dung dịch là", options: ["NaOH", "HCl", "Sudan III", "CuSO4"], correctText: "CuSO4", exp: "CuSO4 (trong môi trường kiềm)." },
+        { id: "p1_b6_3", topic: "Bài 6", text: "Để nhận biết sự có mặt của glucose, ta có thể sử dụng dung dịch hóa chất nào sau đây?", options: ["Benedict.", "Iodine.", "AgCl.", "AgNO3."], correctText: "Benedict.", exp: "Thuốc thử Benedict." },
+        { id: "p1_b6_4", topic: "Bài 6", text: "Khi cho thuốc thử benedict vào dịch lọc từ quả nho và đun nóng trên ngọn lửa đèn cồn, sẽ quan sát được hiện tượng nào sau đây?", options: ["Xuất hiện kết tủa màu đỏ gạch.", "Xuất hiện kết tủa màu trắng sữa.", "Dung dịch chuyển sang màu xanh đen.", "Dung dịch chuyển sang màu trắng sữa."], correctText: "Xuất hiện kết tủa màu đỏ gạch.", exp: "Xuất hiện kết tủa màu đỏ gạch." },
+        { id: "p1_b6_5", topic: "Bài 6", text: "Thuốc thử nào sau đây được sử dụng để xác định sự có mặt có tinh bột?", options: ["Benedict.", "Lugol.", "Mg(NH4)2.", "BaCl2."], correctText: "Lugol.", exp: "Thuốc thử Lugol." },
+        { id: "p1_b6_6", topic: "Bài 6", text: "Có thể sử dụng mẫu vật nào sau đây để tiến hành thí nghiệm xác định sự có mặt của lipid trong tế bào?", options: ["Lá rau muống.", "Quả chuối.", "Lòng trắng trứng.", "Hạt lạc."], correctText: "Hạt lạc.", exp: "Hạt lạc chứa nhiều dầu (lipid)." },
+        { id: "p1_b6_7", topic: "Bài 6", text: "Cho các bước thực hiện thí nghiệm sau:\n(1) Gọt vỏ củ khoai tây, cắt thành những khối nhỏ rồi cho vào cối sứ.\n(2) Quan sát kết quả thí nghiệm.\n(3) Nghiền nhỏ với 10ml nước cất sau đó lọc để bỏ phần bã và giữ lại dịch lọc.\n(4) Cho dịch lọc vào ống nghiệm sau đó nhỏ vài giọt dung dịch Lugol.\nTrình tự các bước thực hiện thí nghiệm để xác định sự có mặt của tinh bột trong tế bào là", options: ["(1) → (2) → (3) → (4).", "(1) → (3) → (4) → (2).", "(2) → (1) → (3) → (4).", "(2) → (4) → (1) → (3)."], correctText: "(1) → (3) → (4) → (2).", exp: "(1) → (3) → (4) → (2)." },
+        { id: "p1_b6_8", topic: "Bài 6", text: "Khi nhỏ thuốc thử Lugol vào dịch lọc củ khoai tây, q.sát được hiện tượng nào sau đây?", options: ["Dung dịch chuyển sang màu đỏ gạch.", "Dung dịch chuyển sang màu vàng.", "Dung dịch chuyển sang màu xanh đen.", "Dung dịch không đổi màu."], correctText: "Dung dịch chuyển sang màu xanh đen.", exp: "Dung dịch chuyển sang màu xanh đen (xanh tím)." },
+        { id: "p1_b6_9", topic: "Bài 6", text: "Sau khi sấy khô mẫu lá tươi, ta thấy khối lượng lá sau khi sấy sẽ", options: ["lớn hơn trước khi sấy.", "nhỏ hơn trước khi sấy.", "không thay đổi.", "bằng 0."], correctText: "nhỏ hơn trước khi sấy.", exp: "Nhỏ hơn trước khi sấy do mất nước." }
+      ],
+
+      // PHẦN 2: 22 CÂU ĐÚNG - SAI CHUẨN TRONG FILE
+      part2: [
+        // Bài 2 (5 câu)
+        { id: "p2_b2_1", topic: "Bài 2", text: "Khi nói về tin sinh học, mỗi phát biểu sau đây là đúng hay sai?", items: [
+          { text: "Tin sinh học là một ngành khoa học tìm kiếm, phát hiện và mô phỏng quy luật vận động của thế giới sống trên cơ sở phân tích nguồn dữ liệu sinh học thông qua các công cụ quản lí, xử lí dữ liệu trên máy tính và mạng internet.", isTrue: true },
+          { text: "Tin sinh học đã trở thành công cụ đắc lực cho sinh học và công nghệ sinh học.", isTrue: true },
+          { text: "Tin sinh học là ngành khoa học sử dụng máy tính để phân tích và lưu giữ các dữ liệu SH.", isTrue: true },
+          { text: "Tin sinh học được ứng dụng để tìm kiếm các gene trong hệ gen và so sánh các gene của các loài với nhau để tìm hiểu mối quan hệ tiến hóa giữa các loài sinh vật.", isTrue: true }
+        ], exp: "Cả 4 ý a, b, c, d đều Đúng." },
+        { id: "p2_b2_2", topic: "Bài 2", text: "Khi nói về ứng dụng của tin sinh học, mỗi phát biểu sau đây đúng hay sai?", items: [
+          { text: "Giúp dò tìm và phát hiện đột biến gây ra các bệnh di truyền.", isTrue: true },
+          { text: "So sánh hệ gene (hay AND), trình tự protein.", isTrue: true },
+          { text: "Xây dựng ngân hàng gene.", isTrue: true },
+          { text: "Giúp phát hiện và điều trị sớm các bệnh di truyền và bệnh không di truyền.", isTrue: false }
+        ], exp: "d Sai (tin sinh học giúp dò tìm và phát hiện đột biến gây ra các bệnh di truyền)." },
+        { id: "p2_b2_3", topic: "Bài 2", text: "Khi nói về kính hiển vi quang học và kính hiển vi điện tử, mỗi phát biểu sau đây là đúng hay sai?", items: [
+          { text: "Kính hiển vi quang học sử dụng nguồn sáng điện hay ánh sáng mặt trời.", isTrue: true },
+          { text: "Kính hiển vi điện tử sử dụng nguồn sáng là các chùm electron.", isTrue: true },
+          { text: "Kính hiển vi quang học và kính hiển vi điện tử đều giúp tăng độ phóng đại của đối tượng quan sát và có độ phóng đại tối đa như nhau.", isTrue: false },
+          { text: "Kính hiển vi điện tử dùng để quan sát những vật thể có kích thước nhỏ mà kính hiển vi quang học không nhìn thấy được.", isTrue: true }
+        ], exp: "c Sai (độ phóng đại KHV quang học tối đa 1500 lần, KHV điện tử tối đa 50 triệu lần)." },
+        { id: "p2_b2_4", topic: "Bài 2", text: "Khi nói về các kỹ năng trong tiến trình nghiên cứu môn sinh học, mỗi phát biểu sau đây là đúng hay sai?", items: [
+          { text: "Bước thiết kế và tiến hành thí nghiệm để chứng minh cho giả thuyết về vấn đề nghiên cứu được đề ra.", isTrue: true },
+          { text: "Bước đặt câu hỏi nghiên cứu giúp định hướng vấn đề cần nghiên cứu.", isTrue: true },
+          { text: "Nội dung báo cáo kết quả nghiên cứu chỉ cần nêu rõ kết quả nghiên cứu và đưa ra kiến nghị.", isTrue: false },
+          { text: "Điều tra khảo sát thực địa có thể tiến hành bằng phiếu câu hỏi hay phỏng vấn tùy vào điều kiện và mục đích điều tra.", isTrue: true }
+        ], exp: "c Sai (báo cáo cần nêu rõ: lí do chọn đề tài, mục đích, giả thuyết, đối tượng, phương pháp, phạm vi, kết quả, kết luận, kiến nghị)." },
+        { id: "p2_b2_5", topic: "Bài 2", text: "Các nhà pháp y sử dụng các phương pháp sau để hỗ trợ cho việc điều tra các vụ án hình sự. Mỗi phương pháp nghiên cứu và học tập môn sinh học sau là đúng hay sai?", items: [
+          { text: "PP quan sát để thu thập bằng chứng tại hiện trường vụ án (dấu vân tay, mẫu vật,…)", isTrue: true },
+          { text: "Phương pháp làm việc trong phòng thí nghiệm để giải trình tự gene từ các mẫu thu thập tại hiện trường, thử nghiệm hóa sinh,…", isTrue: true },
+          { text: "PP nghiên cứu thực nghiệm để nghiên cứu ảnh hưởng của tâm lý đến khả năng gây án,...", isTrue: true },
+          { text: "Phương pháp giải phẩu tử thi để tìm nguyên nhân tử vong.", isTrue: false }
+        ], exp: "d Sai (Có 3 phương pháp nghiên cứu và học tập môn sinh học: quan sát, làm việc trong phòng thí nghiệm và thực nghiệm khoa học)." },
+
+        // Bài 5 (17 câu)
+        { id: "p2_b5_1", topic: "Bài 5", text: "Mỗi nhận đinh sau về protein là Đúng hay Sai?", items: [
+          { text: "Protein được cấu tạo từ các đơn phân là amino acid.", isTrue: true },
+          { text: "Chức năng của protein không phụ thuộc vào các bậc cấu trúc của nó.", isTrue: false },
+          { text: "Trình tự các amino acid của protein có tính đặc thù và quyết định chức năng của protein.", isTrue: true },
+          { text: "Protein có chức năng lưu trữ, bảo quản và truyền đạt thông tin di truyền.", isTrue: false }
+        ], exp: "a Đúng, b Sai, c Đúng, d Sai." },
+        { id: "p2_b5_2", topic: "Bài 5", text: "Các nhận định sau về lipid là Đúng hay Sai?", items: [
+          { text: "Lipid không tan trong nước.", isTrue: true },
+          { text: "Lipid cấu trúc theo nguyên tắc đa phân.", isTrue: false },
+          { text: "Lipid được cấu tạo từ các nguyên tố C, H, O, N, S.", isTrue: false },
+          { text: "Lipid có chức năng cung cấp năng lượng cho tế bào.", isTrue: true }
+        ], exp: "a Đúng, b Sai, c Sai, d Đúng." },
+        { id: "p2_b5_3", topic: "Bài 5", text: "Mỗi nhận định sau về cấu trúc các loại lipid là Đúng hay Sai?", items: [
+          { text: "Dầu, mỡ được cấu tạo bởi 1 phân tử glycerol liên kết với 3 phân tử acid béo.", isTrue: true },
+          { text: "Dầu tồn tại ở dạng lỏng do chứa các acid béo no.", isTrue: false },
+          { text: "Phospholipid được cấu tạo từ các nguyên tố C, H, O, P.", isTrue: true },
+          { text: "Steroid là lipid chứa phân tử acid béo.", isTrue: false }
+        ], exp: "a Đúng, b Sai, c Đúng, d Sai." },
+        { id: "p2_b5_4", topic: "Bài 5", text: "Mỗi nhận định sau về vai trò của lipid là Đúng hay Sai?", items: [
+          { text: "xúc tác phản ứng.", isTrue: false },
+          { text: "dự trữ năng lượng.", isTrue: true },
+          { text: "chứa thông tin di truyền.", isTrue: false },
+          { text: "vận chuyển các chất.", isTrue: false }
+        ], exp: "a Sai, b Đúng, c Sai, d Sai." },
+        { id: "p2_b5_5", topic: "Bài 5", text: "Mỗi ví dụ sau đây minh họa cho chức năng của protein là Đúng hay Sai?", items: [
+          { text: "Enzyme amylase tham gia phản ứng thủy phân tinh bột là ví dụ protein xúc tác.", isTrue: true },
+          { text: "Actin và myosin chịu trách nhiệm co cơ là ví dụ protein cấu trúc.", isTrue: false },
+          { text: "Casein, loại protein sữa là nguồn amino acid chính cho động vật có vú còn non là ví dụ protein bảo vệ.", isTrue: false },
+          { text: "Protein keratin là thành phần cấu tạo nên lông, tóc, móng ở động vật là ví dụ protein cấu trúc.", isTrue: true }
+        ], exp: "a Đúng, b Sai (vận động), c Sai (dự trữ), d Đúng." },
+        { id: "p2_b5_6", topic: "Bài 5", text: "Các nhận định sau về lipid là Đúng hay Sai?", items: [
+          { text: "Cholesterol là thành phần quan trọng của màng tế bào.", isTrue: true },
+          { text: "Phospholipid là một loại chất béo đơn giản.", isTrue: false },
+          { text: "Carotenoid là nhóm sắc tố màu vàng cam ở thực vật có bản chất là một loại lipid.", isTrue: true },
+          { text: "Ở nhiệt độ phòng, mỡ ở trạng thái rắn do chứa các acid béo không no.", isTrue: false }
+        ], exp: "a Đúng, b Sai (phức tạp), c Đúng, d Sai (acid béo no)." },
+        { id: "p2_b5_7", topic: "Bài 5", text: "Các nhận định sau về cấu trúc của protein là Đúng hay Sai?", items: [
+          { text: "Cấu trúc bậc 1 của phân tử protein là các amino acid liên kết với nhau bằng liên kết peptide tạo thành chuỗi polypeptide dạng mạch thẳng.", isTrue: true },
+          { text: "Cấu trúc bậc 2 của phân tử protein là chuỗi polypeptide ở dạng co xoắn hoặc gấp nếp.", isTrue: true },
+          { text: "Cấu trúc không gian bậc 3 của phân tử protein là chuỗi polypeptide ở dạng xoắn hoặc gấp nếp tiếp tục co xoắn.", isTrue: true },
+          { text: "Cấu trúc không gian bậc 4 của phân tử protein là hai hay nhiều chuỗi polypeptide bậc 3 kết hợp với nhau.", isTrue: true }
+        ], exp: "Cả 4 ý a, b, c, d đều Đúng." },
+        { id: "p2_b5_8", topic: "Bài 5", text: "Các nhận định sau Đúng hay Sai? Trong cơ thể sống các chất có đặc tính chung kị nước như:", items: [
+          { text: "tinh bột, glucose, mỡ, fructose.", isTrue: false },
+          { text: "sắc tố, vitamin, steroid, phospholipid, mỡ.", isTrue: true },
+          { text: "mỡ, dầu, testosterone, cholesterone.", isTrue: true },
+          { text: "vitamin, cellulose, phospholipid, glycogen.", isTrue: false }
+        ], exp: "a Sai (tinh bột, glucose, fructose không kị nước), b Đúng, c Đúng, d Sai (cellulose, glycogen không kị nước)." },
+        { id: "p2_b5_9", topic: "Bài 5", text: "Các nhận định sau về sự giống nhau giữa carbohydrate với lipid là đúng hay sai?", items: [
+          { text: "Cấu tạo từ các nguyên tố: C, H, O.", isTrue: true },
+          { text: "Cấu tạo theo nguyên tắc đa phân.", isTrue: false },
+          { text: "Là nguồn dự trữ và cung cấp năng lượng cho tế bào.", isTrue: true },
+          { text: "Carbohydrate với lipid có thể chuyển hóa cho nhau.", isTrue: true }
+        ], exp: "b Sai (Lipid không được cấu trúc theo nguyên tắc đa phân)." },
+        { id: "p2_b5_10", topic: "Bài 5", imageKey: "b5_biuret_benedict", text: "Các phân tử sinh học có thể được nhận biết bằng thí nghiệm với thuốc thử đặc trưng (Thí nghiệm 1 Biuret, Thí nghiệm 2 Benedict như hình). Mỗi nhận định sau đây là Đúng hay Sai về thí nghiệm này?", items: [
+          { text: "Dung dịch M chứa protein.", isTrue: true },
+          { text: "Dung dịch N chứa glucose và thí nghiệm 2 tiến hành ở nhiệt độ thường.", isTrue: false },
+          { text: "Nếu thay dung dịch M bằng dung dịch amino acid tự do thì kết quả thí nghiệm không thay đổi.", isTrue: false },
+          { text: "Thí nghiệm 1 cần tiến hành ở nhiệt độ 100oC.", isTrue: false }
+        ], exp: "a Đúng; b Sai (tiến hành ở 100oC); c Sai (amino acid tự do không có từ 2 liên kết peptide trở lên); d Sai (nhiệt độ phòng)." },
+        { id: "p2_b5_11", topic: "Bài 5", imageKey: "b5_protein_export", text: "Dưới đây mô tả tóm tắt quá trình tổng hợp, hoàn thiện và vận chuyển protein ở tế bào nhân thực. Mỗi nhận định sau đây là Đúng hay Sai về quá trình này?", items: [
+          { text: "Cấu trúc (2) là lưới nội chất trơn.", isTrue: false },
+          { text: "Protein được tổng hợp ở cấu trúc (1).", isTrue: true },
+          { text: "Protein xuất bào được hoàn thiện ở cấu trúc (4).", isTrue: false },
+          { text: "Đồng vị phóng xạ có thể xuất hiện ở các cấu trúc (2), (3) và (4).", isTrue: true }
+        ], exp: "a Sai (bộ máy Golgi), b Đúng, c Sai (hoàn thiện ở cấu trúc 2), d Đúng." },
+        { id: "p2_b5_12", topic: "Bài 5", text: "Khi cho lòng trắng trứng sống vào nước sôi, hiện tượng và cách giải thích sau đây là đúng hay sai?", items: [
+          { text: "Lòng trắng trứng sẽ chuyển thành những khối trắng đục do protein bị biến tính bởi nhiệt độ cao.", isTrue: true },
+          { text: "Lòng trắng trứng sẽ chuyển thành những khối trắng đục do protein hòa tan trong nước ở nhiệt độ cao.", isTrue: false },
+          { text: "Không có hiện tượng gì xảy ra do trong lòng trắng trứng chỉ chứa nước.", isTrue: false },
+          { text: "Lòng trắng trứng sẽ thành khối trong suốt do protein thủy phân trong nước nóng.", isTrue: false }
+        ], exp: "a Đúng, b Sai, c Sai, d Sai." },
+        { id: "p2_b5_13", topic: "Bài 5", text: "Cho các phát biểu DNA. Mỗi nhận định sau là Đúng hay Sai?", items: [
+          { text: "Mang, bảo quản và truyền đạt thông tin di truyền.", isTrue: true },
+          { text: "Nhờ có cấu trúc hoá học đặc biệt mà các phân tử DNA được nhân lên và truyền lại cho các tế bào con gấn như nguyên vẹn cả vế số lượng lẫn chất lượng.", isTrue: true },
+          { text: "So với protein, DNA có ít chức năng hơn nhiều. Nguyên nhân là do cấu trúc của các phân tử DNA.", isTrue: true },
+          { text: "DNA được cấu tạo từ hai chuỗi polynucleotide liên kết ngược chiều nhau (5'- 3' và 3'- 5') bằng các liên kết hydrogen theo nguyên tắc bổ sung.", isTrue: true }
+        ], exp: "Cả 4 ý a, b, c, d đều Đúng." },
+        { id: "p2_b5_14", topic: "Bài 5", text: "Cho các phát biểu về nucleic acid. Mỗi nhận định sau là Đúng hay Sai?", items: [
+          { text: "RNA có cấu trúc chủ yếu từ 2 chuỗi polynucleotide. Mỗi nucleotide được cấu tạo từ base, đường ribose và nhóm phosphate. Có bốn loại base là A, U, G và C.", isTrue: false },
+          { text: "Chức năng của DNA là mang, bảo quản và truyền đạt thông tin di truyền.", isTrue: true },
+          { text: "Mỗi nucleotide được cấu tạo từ ba thành phẩn: base, đường deoxyribose và gốc phosphate.", isTrue: true },
+          { text: "DNA được cấu tạo bởi hai chuỗi polynucleotide liên kết với nhau bằng các liên kết hydrogen (A-T, G-C).", isTrue: true }
+        ], exp: "a Sai (RNA chỉ gồm 1 chuỗi polynucleotide)." },
+        { id: "p2_b5_15", topic: "Bài 5", text: "Mỗi nhận định sau về nucleic acid là Đúng hay Sai?", items: [
+          { text: "Cấu trúc phân tử rRNA tạo ribosome có liên kết hydrogen.", isTrue: true },
+          { text: "RNA thông tin (mRNA) không có liên kết hydrogen, được dùng làm khuôn để tổng hợp protein ở ribosome.", isTrue: true },
+          { text: "RNA vận chuyển (tRNA), có liên kết hydrogen trên toàn phân tử, làm nhiệm vụ vận chuyển amino acid đến ribosome và tiến hành dịch mã.", isTrue: false },
+          { text: "RNA vận chuyển (tRNA) có một đầu 5’ để gắn amino acid và một đầu 3’ mang bộ ba đối mã.", isTrue: false }
+        ], exp: "a Đúng, b Đúng, c Sai, d Sai." },
+        { id: "p2_b5_16", topic: "Bài 5", text: "Khi nói về DNA, phát biểu sau đây là Đúng hay Sai?", items: [
+          { text: "DNA của sinh vật nhân thực chỉ có cấu trúc mạch kép thẳng.", isTrue: false },
+          { text: "Plasmid của sinh vật nhân sơ có cấu trúc mạch kép, vòng.", isTrue: true },
+          { text: "DNA vùng nhân của sinh vật nhân sơ có cấu trúc mạch kép, vòng.", isTrue: true },
+          { text: "Gene trong ti thể của sinh vật nhân thực có cấu trúc mạch kép, vòng.", isTrue: true }
+        ], exp: "a Sai, b Đúng, c Đúng, d Đúng." },
+        { id: "p2_b5_17", topic: "Bài 5", text: "Mỗi nhận định sau về vật chất di truyền ở tế bào nhân sơ là Đúng hay Sai?", items: [
+          { text: "Vùng nhân có DNA xoắn kép, vòng.", isTrue: true },
+          { text: "Một số bào quan có DNA xoắn kép, thẳng.", isTrue: false },
+          { text: "Vùng nhân có RNA mạch đơn.", isTrue: false },
+          { text: "Một số bào quan có mRNA mạch đơn.", isTrue: false }
+        ], exp: "a Đúng, b Sai, c Sai, d Sai." }
+      ],
+
+      // PHẦN 3: 26 CÂU TRẢ LỜI NGẮN CHUẨN TRONG FILE
+      part3: [
+        // Bài 3 (5 câu)
+        { id: "p3_b3_1", topic: "Bài 3", text: "Dưới đây là các cấp tổ chức trong thế giới sống được liệt kê theo thứ tụ từ nhỏ đến lớn: Nguyên tử → phân tử → bào quan → tế bào → mô → cơ quan → hệ cơ quan → cơ thể → quần thể → quần xã → hệ sinh thái → sinh quyển.\nCó bao nhiêu cấp tổ chức sống được xem là cấp tổ chức sống cơ bản nhất?", accepted: ["1"], exp: "Đáp án: 1 (Tế bào)." },
+        { id: "p3_b3_2", topic: "Bài 3", text: "Cho các cấp độ tổ chức của thế giới sống: phân tử, bào quan, mô, cơ quan và hệ cơ quan. Có bao nhiêu cấp độ tổ chức thế giới sống được cấu tạo từ tế bào?", accepted: ["3"], exp: "Đáp án: 3 (mô, cơ quan và hệ cơ quan đều được cấu tạo từ tế bào)." },
+        { id: "p3_b3_3", topic: "Bài 3", text: "Trong các đặc điểm sau đây, có bao nhiêu đặc điểm chỉ có ở các vật sống mà không có ở các vật không sống ?\n(1) Có khả năng tự điều chỉnh.\n(2) Tổ chức theo nguyên tắc thứ bậc.\n(3) Liên tục tiến hóa.\n(4) Diễn ra quá trình trao đổi chất với môi trường.\n(5) Đều được cấu tạo từ tế bào.", accepted: ["4"], exp: "Đáp án: 4 (Vật không sống vẫn có khả năng trao đổi chất với môi trường, ví dụ thanh sắt bị gỉ sét)." },
+        { id: "p3_b3_4", topic: "Bài 3", text: "Trong tự nhiên, môi trường sống luôn có những biến đổi buộc sinh vật phải có sự thích nghi để tồn tại. Quá trình loại bỏ những dạng sống kém thích nghi và giữ lại những dạng sống thích nghi với những môi trường khác nhau nhờ:\n(1) quá trình chọn lọc diễn ra trong tự nhiên.\n(2) quá trình chọn lọc nhân tạo.\nNhập số thứ tự đúng (1 hoặc 2):", accepted: ["1"], exp: "Đáp án: 1 (Nhờ vào quá trình chọn lọc tự nhiên)." },
+        { id: "p3_b3_5", topic: "Bài 3", imageKey: "b3_bird_migration", text: "Ở một loài chim, ban đầu có 10 000 cá thể sống ở vùng (A), sau 5 năm, quần thể này đạt số lượng 30 000 cá thể. Với số lượng cá thể tăng nhanh dẫn đến nguồn thức ăn trong môi trường bị khan hiếm. Do điều kiện sống khó khăn nên đã có 25% cá thể di cư sang vùng (B) để tìm môi trường sống mới. Hỏi có bao nhiêu cá thể đã di cư sang vùng (B)?", accepted: ["7500", "7 500", "7.500", "tự điều chỉnh"], exp: "Đáp án: 7500 cá thể (30.000 × 25% = 7500, thể hiện đặc điểm tự điều chỉnh)." },
+
+        // Bài 4 (7 câu)
+        { id: "p3_b4_1", topic: "Bài 4", text: "Cho các cơ thể sau: con chó, con ốc sên, trùng biến hình, con cua. Có bao nhiêu cơ thể được cấu tạo từ cơ thể đa bào?", accepted: ["3"], exp: "Đáp án: 3 (con chó, con ốc sên, con cua)." },
+        { id: "p3_b4_2", topic: "Bài 4", text: "Học thuyết tế bào có mấy nội dung cơ bản?", accepted: ["3"], exp: "Đáp án: 3." },
+        { id: "p3_b4_3", topic: "Bài 4", text: "Khi nói về quan điểm của học thuyết tế bào, có bao nhiêu quan điểm đúng?\na. Các tế bào là đơn vị cơ sở của cơ thể sống.\nb. Các tế bào có thành phần hóa học tương tự nhau.\nc. Tất cả các sinh vật đều được cấu tạo từ nhiều tế bào.\nd. Sự phân bào mất kiểm soát của tế bào là nguyên nhân gây bệnh ung thư.", accepted: ["2"], exp: "Đáp án: 2 (a, b đúng; c sai vì động vật đơn bào cấu tạo từ 1 tế bào; d không nằm trong học thuyết tế bào)." },
+        { id: "p3_b4_4", topic: "Bài 4", imageKey: "b4_stem_cells", text: "Quan sát Hình 4.1, có bao nhiêu nhận định đúng?\na. Đây là quá trình sinh trưởng của tế bào.\nb. Có thể ứng dụng quá trình này để tái tạo các cơ quan phục vụ cho y học.\nc. Tế bào gốc phôi chỉ có thể phân chia thành một số loại tế bào trong cơ thể.\nd. Tế bào gốc phôi được gọi là tế bào đa năng.", accepted: ["2"], exp: "Đáp án: 2 (b và d đúng; a sai vì là quá trình biệt hóa tế bào; c sai vì tế bào gốc phôi hình thành tất cả các loại tế bào)." },
+        { id: "p3_b4_5", topic: "Bài 4", text: "Cho các phát biểu sau về tế bào, có bao nhiêu phát biểu đúng?\na. Mọi sinh vật sống đều được cấu tạo từ tế bào.\nb. Mọi hoạt động sống của cơ thể đều được thực hiện trong tế bào.\nc. Mỗi sinh vật luôn được cấu tạo từ nhiều tế bào khác nhau.\nd. Các động vật đơn bào gồm: vi khuẩn, virus, động vật nguyên sinh.", accepted: ["2"], exp: "Đáp án: 2 (a và b đúng; c sai ở đơn bào; d sai vì virus chưa có cấu tạo tế bào)." },
+        { id: "p3_b4_6", topic: "Bài 4", text: "Dựa vào tỉ lệ có trong cơ thể, có thể chia các nguyên tố hoá học trong cơ thể người thành 2 nhóm: Nguyên tố đa lượng và nguyên tố vi lượng. Các nguyên tố hóa học có vai trò quan trọng như: thành phần cấu tạo nên tế bào, cấu tạo enzym, cấu tạo các đại phân tử hữu cơ, cấu tạo hormon, giúp điều tiết quá trình trao đổi chất trong tế bào. Có bao nhiêu vai trò của nhóm nguyên tố vi lượng?", accepted: ["3"], exp: "Đáp án: 3 (cấu tạo enzym, cấu tạo hormon, điều tiết quá trình trao đổi chất)." },
+        { id: "p3_b4_7", topic: "Bài 4", text: "Cho các phát biểu dưới đây. Có bao nhiêu phát biểu sai?\n1. Phân tử nước được cấu tạo bằng liên kết hóa trị không phân cực giữa 2 nguyên tử H và 1 nguyên tử O.\n2. Các phân tử nước có khả năng tương tác với nhau và hình thành nên mạng lưới nước (lớp màng nước).\n3. Liên kết giữa các phân tử nước được gọi là liên kết hydrogen.\n4. Trong phân tử nước, nguyên tử O mang điện tích dương, nguyên tử H mang điện tích âm.\n5. Khi ở trạng thái đông cứng (nước đá), các liên kết hydrogen luôn bền vững.", accepted: ["2"], exp: "Đáp án: 2 (Phát biểu 1 và 4 sai)." },
+
+        // Bài 5 (14 câu)
+        { id: "p3_b5_1", topic: "Bài 5", text: "Cho các liên kết sau: liên kết phosphodiester, liên kết peptide, liên kết glicosidic. Có bao nhiêu liên kết giúp duy trì cấu trúc bậc 1 của phân tử protein?", accepted: ["1"], exp: "Đáp án: 1 (liên kết peptide)." },
+        { id: "p3_b5_2", topic: "Bài 5", text: "Trong cấu trúc của phân tử phospholipid có vùng ưa nước và đuôi kị nước. Đuôi kị nước được cấu tạo bởi mấy chuỗi acid béo?", accepted: ["2"], exp: "Đáp án: 2." },
+        { id: "p3_b5_3", topic: "Bài 5", imageKey: "b5_steroids", text: "Cho các chất sau đây: dầu, mỡ, sáp, phospholipid, steroid. Có bao nhiêu lipid không chứa phân tử acid béo?", accepted: ["1"], exp: "Đáp án: 1 (Steroid không chứa phân tử acid béo, gồm 4 vòng carbon)." },
+        { id: "p3_b5_4", topic: "Bài 5", text: "Cho những phân tử sau: integrin, insulin, phospholipid, cholesteron, cellulose. Trong những phân tử trên, có bao nhiêu phân tử tham gia cấu tạo nên màng sinh chất của tế bào?", accepted: ["3"], exp: "Đáp án: 3 (integrin, phospholipid, cholesteron)." },
+        { id: "p3_b5_5", topic: "Bài 5", text: "Cho các vai trò sau:\n(1) Là nguồn dự trữ và cung cấp năng lượng cho cơ thể.\n(2) Tham gia cấu trúc màng sinh chất.\n(3) Tham gia điều hòa sinh sản ở động vật.\n(4) Xúc tác cho các phản ứng sinh học.\nSố vai trò đúng với vai trò của lipid trong tế bào và cơ thể là bao nhiêu?", accepted: ["3"], exp: "Đáp án: 3 ((1), (2), (3))." },
+        { id: "p3_b5_6", topic: "Bài 5", text: "Cho các nhận định về protein, lipid có bao nhiêu nhận định đúng?\nI. Protein là đại phân tử sinh học chiếm tỉ lệ nhiều nhất trong cơ thể sinh vật.\nII. Insulin là hormone tham gia điều hòa nồng độ glucose trong máu có bản chất là lipid.\nIII. Phospholipid là một loại chất béo phức tạp.\nIV. Collagen và elastin làm khung sợi trong các mô liên kết của động vật là ví dụ về protein cấu trúc.", accepted: ["3"], exp: "Đáp án: 3 (I, III, IV đúng; II sai vì insulin có bản chất là protein)." },
+        { id: "p3_b5_7", topic: "Bài 5", text: "Cho các nhận định sau, có bao nhiêu nhận định đúng với vai trò của lipid trong tế bào và cơ thể?\n(1) Dự trữ năng lượng trong tế bào.\n(2) Tham gia cấu trúc màng sinh chất.\n(3) Tham gia vào cấu trúc của hormone.\n(4) Tham gia vào chức năng vận động của tế bào.\n(5) Xúc tác cho các phản ứng sinh học.", accepted: ["3"], exp: "Đáp án: 3 ((1), (2), (3))." },
+        { id: "p3_b5_8", topic: "Bài 5", text: "Khi nói về chức năng protein, có bao nhiêu phát biểu đúng?\n(1) Protein vận chuyển các chất trong cơ thể như vận chuyển CO2 và O2 nhờ hemoglobin.\n(2) Protein tham gia trong thành phần của enzyme với chức năng xúc tác các phản ứng sinh hóa.\n(3) Protein tham gia điều hoà quá trình trao đổi chất như insulin điều hòa hàm lượng đường trong máu.\n(4) Protein tham gia dự trữ các chất như dự trữ các glucose, lipid, acid béo no.\n(5) Protein tham gia lưu trữ, bảo quản, truyền đạt thông tin.", accepted: ["3"], exp: "Đáp án: 3 ((1), (2), (3) đúng)." },
+        { id: "p3_b5_9", topic: "Bài 5", text: "Có bao nhiêu phát biểu đúng?\n(1) Ở trong cùng 1 tế bào, DNA là loại nucleic acid có kích thước lớn nhất.\n(2) Đơn phân cấu trúc của RNA gồm 4 loại là A,T,G,C.\n(3) Phân tử mRNA và rRNA có cấu trúc mạch kép.\n(4) Ở trong tế bào, trong các loại RNA thì mRNA có hàm lượng cao nhất.", accepted: ["1"], exp: "Đáp án: 1 (Chỉ có (1) đúng)." },
+        { id: "p3_b5_10", topic: "Bài 5", text: "Có bao nhiêu phát biểu đúng về DNA ở tế bào nhân thực?\n(1) DNA tồn tại ở cả trong nhân và trong tế bào chất.\n(2) Các tác nhân đột biến chỉ tác động lên DNA trong nhân tế bào mà không tác động lên DNA trong tế bào chất.\n(3) Các phân tử DNA trong nhân tế bào có cấu trúc kép, mạch thẳng còn các phân tử DNA trong tế bào chất có cấu trúc kép, mạch vòng.\n(4) Khi tế bào giảm phân, hàm lượng DNA trong nhân và hàm lượng DNA trong tế bào chất của giao tử luôn giảm đi một nửa so với tế bào ban đầu.", accepted: ["2"], exp: "Đáp án: 2 ((1) và (3) đúng; (2) và (4) sai)." },
+        { id: "p3_b5_11", topic: "Bài 5", imageKey: "b5_nucleotide_cg", text: "Dựa vào hình bên, có bao nhiêu phát biểu sau đây đúng ?\n(1) Có liên kết hydrogen.\n(2) Có liên kết phosphater.\n(3) Các đơn phân cấu trúc nên DNA.\n(4) Các đơn phân cấu trúc nên rRNA.", accepted: ["2"], exp: "Đáp án: 2 ((2) và (4) đúng do đường có nhóm 2'-OH của ribose)." },
+        { id: "p3_b5_12", topic: "Bài 5", imageKey: "b5_nucleotide_cg", text: "Dựa vào hình dưới, có bao nhiêu phát biểu sau đây đúng về nucleotide?\n(1) Có hai loại nucleotide.\n(2) Các loại nucleotide này chỉ tham gia cấu trúc DNA.\n(3) Các loại nucleotide này chứa liên kết hydrogen.\n(4) Mỗi nucleotide có một phân tử base purine.", accepted: ["1"], exp: "Đáp án: 1 (Chỉ có (1) đúng; (2), (3), (4) sai theo giải thích trong file đề cương)." },
+        { id: "p3_b5_13", topic: "Bài 5", text: "Có bao nhiêu nhận xét là đặc điểm cấu trúc của DNA?\nI. Chỉ gồm một chuỗi polynucleotide..\nII. Cấu tạo theo nguyên tắc đa phân.\nIII. Có bốn loại đơn phân: A, T, G, C.\nIV. Các đơn phân liên kết theo nguyên tắc bổ sung.\nV. Có liên kết phosphodiester trong cấu trúc phân tử.", accepted: ["4"], exp: "Đáp án: 4 (II, III, IV, V đúng)." },
+        { id: "p3_b5_14", topic: "Bài 5", imageKey: "b5_rna_types", text: "Dựa vào hình dưới, có bao nhiêu phát biểu sau đây đúng nucleic acid?\nI. Hình (a) cấu trúc phân tử mRNA, hình (b) cấu trúc tRNA.\nII. RNA thông tin (mRNA) không có liên kết hydrogen, được dùng làm khuôn để tổng hợp protein ở ribosome.\nIII. RNA vận chuyển (tRNA), có liên kết hydrogen trên toàn phân tử, làm nhiệm vụ vận chuyển amino acid đến ribosome và tiến hành dịch mã.\nIV. RNA vận chuyển (tRNA) có một đầu 5’ để gắn amino acid và một đầu 3’ mang bộ ba đối mã.", accepted: ["2", "1"], exp: "Đáp án đề cương: 2 (III và IV sai theo giải thích đề cương; hệ thống chấm đúng cho cả 2 và 1)." }
+      ]
+    };
+
+    const TOTAL_QUESTIONS_COUNT = EXAM_DATABASE.part1.length + EXAM_DATABASE.part2.length + EXAM_DATABASE.part3.length; // 150 câu
+
+    /* ---------------------------------------------------------
+       D. TRẠNG THÁI TOÀN CỤC & THUẬT TOÁN ĐẢO ĐỀ
+       --------------------------------------------------------- */
+    let examConfig = {
+      shuffleQuestions: true,
+      shuffleOptions: true
+    };
+
+    let activeExamData = {
+      studentName: "",
+      startTime: null,
+      endTime: null,
+      durationMinutes: 150,
+      timerInterval: null,
+      remainingSeconds: 150 * 60,
+      part1: [],
+      part2: [],
+      part3: [],
+      userAnswers: {
+        part1: {},
+        part2: {},
+        part3: {}
+      },
+      isSubmitted: false,
+      lastScoreNum: 0
+    };
+
+    let currentFilterCategory = "all";
+
+    function shuffleArray(array) {
+      const arr = [...array];
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    function toggleExamSetting(settingKey) {
+      examConfig[settingKey] = !examConfig[settingKey];
+      const isQ = settingKey === "shuffleQuestions";
+      const isEnabled = examConfig[settingKey];
+
+      const box = document.getElementById(isQ ? "boxToggleQ" : "boxToggleOpt");
+      const badge = document.getElementById(isQ ? "badgeToggleQ" : "badgeToggleOpt");
+
+      if (isEnabled) {
+        box.className = `p-3 rounded-2xl border-2 ${isQ ? 'border-indigo-500 bg-indigo-50/60' : 'border-teal-500 bg-teal-50/60'} flex items-center justify-between cursor-pointer select-none transition-all stat-card-anim`;
+        badge.className = `px-2 py-0.5 rounded-md text-[11px] font-black ${isQ ? 'bg-indigo-600' : 'bg-teal-600'} text-white`;
+        badge.innerText = "BẬT";
+      } else {
+        box.className = "p-3 rounded-2xl border-2 border-slate-200 bg-slate-50 flex items-center justify-between cursor-pointer select-none transition-all stat-card-anim";
+        badge.className = "px-2 py-0.5 rounded-md text-[11px] font-black bg-slate-300 text-slate-600";
+        badge.innerText = "TẮT";
+      }
+    }
+
+    function buildPreparedExamData() {
+      let p1 = EXAM_DATABASE.part1.map(q => {
+        let finalOpts = [...q.options];
+        if (examConfig.shuffleOptions) {
+          finalOpts = shuffleArray(finalOpts);
+        }
+        return { ...q, displayOptions: finalOpts };
+      });
+
+      let p2 = EXAM_DATABASE.part2.map(q => ({
+        ...q,
+        items: q.items.map(it => ({ ...it }))
+      }));
+
+      let p3 = EXAM_DATABASE.part3.map(q => ({
+        ...q,
+        accepted: [...q.accepted]
+      }));
+
+      if (examConfig.shuffleQuestions) {
+        p1 = shuffleArray(p1);
+        p2 = shuffleArray(p2);
+        p3 = shuffleArray(p3);
+      }
+
+      activeExamData.part1 = p1;
+      activeExamData.part2 = p2;
+      activeExamData.part3 = p3;
+      activeExamData.userAnswers = { part1: {}, part2: {}, part3: {} };
+      activeExamData.isSubmitted = false;
+      activeExamData.remainingSeconds = 150 * 60;
+    }
+
+    function startExam() {
+      const nameInput = document.getElementById("studentNameInput");
+      const name = nameInput.value.trim();
+      const errorMsg = document.getElementById("nameErrorMsg");
+
+      if (!name) {
+        errorMsg.classList.remove("hidden");
+        nameInput.focus();
+        return;
+      }
+      errorMsg.classList.add("hidden");
+
+      activeExamData.studentName = name;
+      activeExamData.startTime = new Date();
+
+      buildPreparedExamData();
+
+      document.getElementById("examTopHeader").classList.remove("hidden");
+      document.getElementById("floatingBackTopBtn").classList.add("hidden");
+      document.getElementById("resultCard").classList.add("hidden");
+
+      document.getElementById("headerStudentName").innerText = name;
+      document.getElementById("lobbyScreen").classList.add("hidden");
+
+      startTimerCountdown();
+      renderExamQuestions();
+      renderNavigationDrawer();
+      updateProgressBar();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    /* ---------------------------------------------------------
+       E. ĐỒNG HỒ ĐẾM NGƯỢC 150 PHÚT
+       --------------------------------------------------------- */
+    function startTimerCountdown() {
+      if (activeExamData.timerInterval) clearInterval(activeExamData.timerInterval);
+
+      activeExamData.timerInterval = setInterval(() => {
+        if (activeExamData.remainingSeconds <= 0) {
+          clearInterval(activeExamData.timerInterval);
+          executeSubmitExam(true);
+          return;
+        }
+        activeExamData.remainingSeconds--;
+        renderTimerDisplay();
+      }, 1000);
+
+      renderTimerDisplay();
+    }
+
+    function renderTimerDisplay() {
+      const minutes = Math.floor(activeExamData.remainingSeconds / 60);
+      const seconds = activeExamData.remainingSeconds % 60;
+      const fmt = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+      const el = document.getElementById("countdownDisplay");
+      if (el) el.innerText = fmt;
+    }
+
+    /* ---------------------------------------------------------
+       F. RENDER CÂU HỎI & ANIMATIONS
+       --------------------------------------------------------- */
+    function renderExamQuestions() {
+      const container = document.getElementById("examCardsList");
+      container.innerHTML = "";
+
+      let overallQuestionNumber = 1;
+
+      // --- PHẦN 1 ---
+      const p1Header = document.createElement("div");
+      p1Header.className = "category-block p1-block mb-4 p-4 rounded-2xl bg-gradient-to-r from-indigo-900 to-indigo-700 text-white shadow-md flex items-center justify-between";
+      p1Header.innerHTML = `
+        <h2 class="text-sm sm:text-base font-black tracking-wide">PHẦN I: CÂU HỎI TRẮC NGHIỆM NHIỀU LỰA CHỌN</h2>
+        <span class="px-3 py-1 rounded-xl bg-white/20 text-xs font-mono font-bold">102 Câu</span>
+      `;
+      container.appendChild(p1Header);
+
+      activeExamData.part1.forEach((q, idx) => {
+        const card = document.createElement("div");
+        card.id = `qCard_${q.id}`;
+        card.dataset.category = "part1";
+        card.style.animationDelay = `${Math.min(idx * 0.02, 0.3)}s`;
+        card.className = "category-card part1-card bg-white rounded-3xl p-5 sm:p-6 border-2 border-indigo-100 shadow-sm hover:border-indigo-300";
+
+        const letters = ["A", "B", "C", "D"];
+        let optionsHtml = q.displayOptions.map((optText, optIdx) => {
+          const letter = letters[optIdx] || "";
+          return `
+            <label id="optLabel_${q.id}_${optIdx}" class="option-box group flex items-start gap-3 p-3.5 rounded-2xl border-2 border-slate-200 hover:border-indigo-500 bg-white hover:bg-indigo-50/40 cursor-pointer select-none">
+              <input type="radio" name="opt_${q.id}" value="${encodeURIComponent(optText)}"
+                onchange="handleSelectP1('${q.id}', '${encodeURIComponent(optText)}', ${optIdx})"
+                class="mt-1 w-4 h-4 text-indigo-600 focus:ring-indigo-500 border-slate-300">
+              <div class="text-xs sm:text-sm font-semibold text-slate-800 leading-relaxed group-hover:text-indigo-950">
+                <strong class="font-mono text-indigo-600 mr-1.5">${letter}.</strong> ${optText}
+              </div>
+            </label>
+          `;
+        }).join("");
+
+        card.innerHTML = `
+          <div class="flex items-center justify-between gap-2 mb-2.5">
+            <span class="inline-flex items-center px-3 py-1 rounded-xl text-xs font-black bg-indigo-100 text-indigo-800 font-mono">
+              Câu ${overallQuestionNumber}
+            </span>
+            <span class="text-xs font-extrabold text-slate-400">${q.topic}</span>
+          </div>
+          <div class="text-xs sm:text-sm font-extrabold text-slate-900 leading-relaxed whitespace-pre-line mb-3">${q.text}</div>
+          <div id="imgWrap_${q.id}">${buildQuestionImageHtml(q)}</div>
+          <div class="grid grid-cols-1 gap-2.5 mt-3">${optionsHtml}</div>
+          <div id="solution_${q.id}" class="hidden mt-4 p-4 rounded-2xl text-xs sm:text-sm leading-relaxed"></div>
+        `;
+
+        container.appendChild(card);
+        q.orderNumber = overallQuestionNumber++;
+      });
+
+      // --- PHẦN 2 ---
+      const p2Header = document.createElement("div");
+      p2Header.className = "category-block p2-block my-6 p-4 rounded-2xl bg-gradient-to-r from-teal-900 to-teal-700 text-white shadow-md flex items-center justify-between";
+      p2Header.innerHTML = `
+        <h2 class="text-sm sm:text-base font-black tracking-wide">PHẦN II: CÂU HỎI TRẮC NGHIỆM ĐÚNG - SAI</h2>
+        <span class="px-3 py-1 rounded-xl bg-white/20 text-xs font-mono font-bold">22 Câu</span>
+      `;
+      container.appendChild(p2Header);
+
+      activeExamData.part2.forEach((q, idx) => {
+        const card = document.createElement("div");
+        card.id = `qCard_${q.id}`;
+        card.dataset.category = "part2";
+        card.style.animationDelay = `${Math.min(idx * 0.025, 0.3)}s`;
+        card.className = "category-card part2-card bg-white rounded-3xl p-5 sm:p-6 border-2 border-teal-100 shadow-sm hover:border-teal-300";
+
+        const letters = ["a", "b", "c", "d"];
+        let subItemsHtml = q.items.map((it, itIdx) => {
+          const letLabel = letters[itIdx] || "";
+          return `
+            <div class="option-box p-3.5 bg-slate-50 rounded-2xl border border-slate-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div class="text-xs sm:text-sm font-semibold text-slate-800 leading-relaxed flex-1">
+                <strong class="font-mono text-teal-700 uppercase mr-1">${letLabel})</strong> ${it.text}
+              </div>
+              <div class="flex items-center gap-2 flex-shrink-0">
+                <button type="button" id="btnTF_${q.id}_${itIdx}_true" onclick="handleSelectP2('${q.id}', ${itIdx}, true)"
+                  class="px-3.5 py-1.5 rounded-xl border-2 border-slate-300 hover:border-teal-600 text-xs font-black text-slate-600 hover:text-teal-700 bg-white transition-all cursor-pointer">
+                  ĐÚNG
+                </button>
+                <button type="button" id="btnTF_${q.id}_${itIdx}_false" onclick="handleSelectP2('${q.id}', ${itIdx}, false)"
+                  class="px-3.5 py-1.5 rounded-xl border-2 border-slate-300 hover:border-rose-600 text-xs font-black text-slate-600 hover:text-rose-700 bg-white transition-all cursor-pointer">
+                  SAI
+                </button>
+              </div>
+            </div>
+          `;
+        }).join("");
+
+        card.innerHTML = `
+          <div class="flex items-center justify-between gap-2 mb-2.5">
+            <span class="inline-flex items-center px-3 py-1 rounded-xl text-xs font-black bg-teal-100 text-teal-800 font-mono">
+              Câu ${overallQuestionNumber} (Đúng/Sai)
+            </span>
+            <span class="text-xs font-extrabold text-slate-400">${q.topic}</span>
+          </div>
+          <div class="text-xs sm:text-sm font-extrabold text-slate-900 leading-relaxed whitespace-pre-line mb-3">${q.text}</div>
+          <div id="imgWrap_${q.id}">${buildQuestionImageHtml(q)}</div>
+          <div class="space-y-2.5 mt-3">${subItemsHtml}</div>
+          <div id="solution_${q.id}" class="hidden mt-4 p-4 rounded-2xl text-xs sm:text-sm leading-relaxed"></div>
+        `;
+
+        container.appendChild(card);
+        q.orderNumber = overallQuestionNumber++;
+      });
+
+      // --- PHẦN 3 ---
+      const p3Header = document.createElement("div");
+      p3Header.className = "category-block p3-block my-6 p-4 rounded-2xl bg-gradient-to-r from-amber-900 to-amber-700 text-white shadow-md flex items-center justify-between";
+      p3Header.innerHTML = `
+        <h2 class="text-sm sm:text-base font-black tracking-wide">PHẦN III: CÂU HỎI TRẮC NGHIỆM TRẢ LỜI NGẮN</h2>
+        <span class="px-3 py-1 rounded-xl bg-white/20 text-xs font-mono font-bold">26 Câu</span>
+      `;
+      container.appendChild(p3Header);
+
+      activeExamData.part3.forEach((q, idx) => {
+        const card = document.createElement("div");
+        card.id = `qCard_${q.id}`;
+        card.dataset.category = "part3";
+        card.style.animationDelay = `${Math.min(idx * 0.025, 0.3)}s`;
+        card.className = "category-card part3-card bg-white rounded-3xl p-5 sm:p-6 border-2 border-amber-100 shadow-sm hover:border-amber-300";
+
+        card.innerHTML = `
+          <div class="flex items-center justify-between gap-2 mb-2.5">
+            <span class="inline-flex items-center px-3 py-1 rounded-xl text-xs font-black bg-amber-100 text-amber-800 font-mono">
+              Câu ${overallQuestionNumber} (Trả lời ngắn)
+            </span>
+            <span class="text-xs font-extrabold text-slate-400">${q.topic}</span>
+          </div>
+          <div class="text-xs sm:text-sm font-extrabold text-slate-900 leading-relaxed whitespace-pre-line mb-3">${q.text}</div>
+          <div id="imgWrap_${q.id}">${buildQuestionImageHtml(q)}</div>
+          <div class="mt-4 flex items-center gap-3">
+            <span class="text-xs font-extrabold uppercase text-amber-900">Đáp án:</span>
+            <input type="text" id="inputSA_${q.id}" placeholder="Nhập số..."
+              oninput="handleInputP3('${q.id}', this.value)"
+              class="max-w-xs px-4 py-2.5 bg-amber-50/50 border-2 border-amber-200 focus:border-amber-500 focus:bg-white rounded-xl text-sm font-mono font-bold text-slate-900 outline-none transition-all">
+          </div>
+          <div id="solution_${q.id}" class="hidden mt-4 p-4 rounded-2xl text-xs sm:text-sm leading-relaxed"></div>
+        `;
+
+        container.appendChild(card);
+        q.orderNumber = overallQuestionNumber++;
+      });
+    }
+
+    /* ---------------------------------------------------------
+       G. LƯU CÂU TRẢ LỜI & CẬP NHẬT TIẾN ĐỘ
+       --------------------------------------------------------- */
+    function handleSelectP1(qId, encodedValue, selectedIdx) {
+      if (activeExamData.isSubmitted) return;
+      const textVal = decodeURIComponent(encodedValue);
+      activeExamData.userAnswers.part1[qId] = textVal;
+
+      for (let i = 0; i < 4; i++) {
+        const lbl = document.getElementById(`optLabel_${qId}_${i}`);
+        if (lbl) {
+          if (i === selectedIdx) lbl.classList.add("option-selected");
+          else lbl.classList.remove("option-selected");
+        }
+      }
+
+      updateQuestionNavStatus(qId, true);
+      updateProgressBar();
+    }
+
+    function handleSelectP2(qId, itemIdx, boolVal) {
+      if (activeExamData.isSubmitted) return;
+      if (!activeExamData.userAnswers.part2[qId]) {
+        activeExamData.userAnswers.part2[qId] = [null, null, null, null];
+      }
+      activeExamData.userAnswers.part2[qId][itemIdx] = boolVal;
+
+      const btnT = document.getElementById(`btnTF_${qId}_${itemIdx}_true`);
+      const btnF = document.getElementById(`btnTF_${qId}_${itemIdx}_false`);
+
+      if (boolVal) {
+        btnT.className = "px-3.5 py-1.5 rounded-xl border-2 border-teal-600 bg-teal-600 text-white text-xs font-black shadow-xs scale-105 transition-all";
+        btnF.className = "px-3.5 py-1.5 rounded-xl border-2 border-slate-300 text-slate-600 bg-white text-xs font-black transition-all";
+      } else {
+        btnF.className = "px-3.5 py-1.5 rounded-xl border-2 border-rose-600 bg-rose-600 text-white text-xs font-black shadow-xs scale-105 transition-all";
+        btnT.className = "px-3.5 py-1.5 rounded-xl border-2 border-slate-300 text-slate-600 bg-white text-xs font-black transition-all";
+      }
+
+      const allChosen = activeExamData.userAnswers.part2[qId].every(v => v !== null && v !== undefined);
+      updateQuestionNavStatus(qId, allChosen);
+      updateProgressBar();
+    }
+
+    function handleInputP3(qId, value) {
+      if (activeExamData.isSubmitted) return;
+      const val = value.trim();
+      if (val) {
+        activeExamData.userAnswers.part3[qId] = val;
+        updateQuestionNavStatus(qId, true);
+      } else {
+        delete activeExamData.userAnswers.part3[qId];
+        updateQuestionNavStatus(qId, false);
+      }
+      updateProgressBar();
+    }
+
+    function renderNavigationDrawer() {
+      const g1 = document.getElementById("navGridP1");
+      const g2 = document.getElementById("navGridP2");
+      const g3 = document.getElementById("navGridP3");
+
+      g1.innerHTML = "";
+      g2.innerHTML = "";
+      g3.innerHTML = "";
+
+      activeExamData.part1.forEach(q => g1.appendChild(createNavButton(q.id, q.orderNumber)));
+      activeExamData.part2.forEach(q => g2.appendChild(createNavButton(q.id, q.orderNumber)));
+      activeExamData.part3.forEach(q => g3.appendChild(createNavButton(q.id, q.orderNumber)));
+    }
+
+    function createNavButton(qId, orderNum) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.id = `navBtn_${qId}`;
+      btn.className = "nav-cell h-8 rounded-lg bg-slate-100 text-slate-700 text-xs font-mono font-bold hover:bg-slate-200 cursor-pointer flex items-center justify-center";
+      btn.innerText = orderNum;
+      btn.onclick = () => {
+        const el = document.getElementById(`qCard_${qId}`);
+        if (el) {
+          if (el.classList.contains("hidden")) filterQuestionCategory("all");
+          el.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      };
+      return btn;
+    }
+
+    function updateQuestionNavStatus(qId, isDone) {
+      const btn = document.getElementById(`navBtn_${qId}`);
+      if (!btn) return;
+      if (isDone) {
+        btn.className = "nav-cell nav-cell-done h-8 rounded-lg bg-emerald-500 text-white text-xs font-mono font-black shadow-xs flex items-center justify-center";
+      } else {
+        btn.className = "nav-cell h-8 rounded-lg bg-slate-100 text-slate-700 text-xs font-mono font-bold hover:bg-slate-200 flex items-center justify-center";
+      }
+    }
+
+    function updateProgressBar() {
+      const c1 = Object.keys(activeExamData.userAnswers.part1).length;
+      let c2 = 0;
+      activeExamData.part2.forEach(q => {
+        const arr = activeExamData.userAnswers.part2[q.id];
+        if (arr && arr.every(v => v !== null && v !== undefined)) c2++;
+      });
+      const c3 = Object.keys(activeExamData.userAnswers.part3).length;
+
+      const totalAnswered = c1 + c2 + c3;
+      const pct = Math.round((totalAnswered / TOTAL_QUESTIONS_COUNT) * 100);
+
+      document.getElementById("progressBar").style.width = `${pct}%`;
+      document.getElementById("progressText").innerText = `${pct}% (${totalAnswered}/${TOTAL_QUESTIONS_COUNT})`;
+      document.getElementById("mobileProgressPercent").innerText = `${pct}%`;
+
+      document.getElementById("navStatP1").innerText = `${c1}/102`;
+      document.getElementById("navStatP2").innerText = `${c2}/22`;
+      document.getElementById("navStatP3").innerText = `${c3}/26`;
+    }
+
+    function filterQuestionCategory(catKey) {
+      currentFilterCategory = catKey;
+
+      document.querySelectorAll(".filter-tab").forEach(tab => {
+        tab.className = "filter-tab px-3 py-1.5 rounded-lg text-slate-600 hover:text-indigo-700 transition-all font-extrabold text-xs cursor-pointer";
+      });
+
+      const activeDesktopTab = document.getElementById(`tab-${catKey}`);
+      if (activeDesktopTab) {
+        activeDesktopTab.className = "filter-tab px-3 py-1.5 rounded-lg bg-white text-indigo-700 shadow-xs font-extrabold text-xs cursor-pointer";
+      }
+      const activeMobileTab = document.getElementById(`m-tab-${catKey}`);
+      if (activeMobileTab) {
+        activeMobileTab.className = "filter-tab px-2.5 py-1 rounded-lg bg-white text-indigo-700 border border-slate-200 shadow-2xs font-extrabold text-xs";
+      }
+
+      document.querySelectorAll(".category-card").forEach(c => {
+        if (!c.dataset.category) return;
+        if (catKey === "all" || c.dataset.category === catKey) c.classList.remove("hidden");
+        else c.classList.add("hidden");
+      });
+
+      const p1Block = document.querySelector(".p1-block");
+      const p2Block = document.querySelector(".p2-block");
+      const p3Block = document.querySelector(".p3-block");
+
+      if (p1Block) p1Block.style.display = (catKey === "all" || catKey === "part1") ? "flex" : "none";
+      if (p2Block) p2Block.style.display = (catKey === "all" || catKey === "part2") ? "flex" : "none";
+      if (p3Block) p3Block.style.display = (catKey === "all" || catKey === "part3") ? "flex" : "none";
+    }
+
+    /* ---------------------------------------------------------
+       H. HIỆU ỨNG ĂN MỪNG THEO CẤP ĐIỂM (ĐIỂM CÀNG CAO HIỆU ỨNG CÀNG ĐẸP)
+       --------------------------------------------------------- */
+    function animateScoreCounter(targetScore) {
+      const scoreEl = document.getElementById("resScore");
+      const duration = 1200;
+      const startTime = performance.now();
+
+      function tick(now) {
+        const progress = Math.min((now - startTime) / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        const currentVal = (targetScore * eased).toFixed(2);
+        scoreEl.innerText = currentVal;
+        if (progress < 1) requestAnimationFrame(tick);
+        else scoreEl.innerText = targetScore.toFixed(2);
+      }
+      requestAnimationFrame(tick);
+    }
+
+    function applyScoreTierVisualsAndFireworks(scoreNum) {
+      const resCard = document.getElementById("resultCard");
+      const trophy = document.getElementById("resTrophyIcon");
+      const badge = document.getElementById("resRankBadge");
+
+      resCard.classList.remove("result-tier-legend", "result-tier-high", "result-tier-good");
+
+      if (scoreNum >= 9.0) {
+        // CẤP 1: XUẤT SẮC ĐỈNH CAO (9.0 - 10.0) -> Pháo hoa đại bác + mưa sao vàng kim liên hoàn + khung cầu vồng phát sáng
+        resCard.classList.add("result-tier-legend");
+        trophy.className = "w-16 h-16 rounded-2xl bg-gradient-to-br from-yellow-400 via-amber-500 to-rose-500 text-white flex items-center justify-center text-3xl shadow-xl trophy-anim flex-shrink-0";
+        trophy.innerHTML = `<i class="fa-solid fa-crown"></i>`;
+        badge.className = "inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-black bg-gradient-to-r from-amber-400 to-orange-500 text-white shadow-sm";
+        badge.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles"></i> ĐỈNH CAO XUẤT SẮC • MASTER SINH 10`;
+
+        if (typeof confetti === "function") {
+          const end = Date.now() + 4200;
+          const colors = ["#fbbf24", "#f59e0b", "#10b981", "#6366f1", "#ec4899"];
+          (function frame() {
+            confetti({ particleCount: 6, angle: 60, spread: 60, origin: { x: 0, y: 0.65 }, colors });
+            confetti({ particleCount: 6, angle: 120, spread: 60, origin: { x: 1, y: 0.65 }, colors });
+            if (Date.now() < end) requestAnimationFrame(frame);
+          })();
+          setTimeout(() => {
+            confetti({ particleCount: 120, spread: 100, origin: { y: 0.5 }, shapes: ["star"], colors: ["#fde047", "#f59e0b", "#ffffff"] });
+          }, 450);
+        }
+      } else if (scoreNum >= 8.0) {
+        // CẤP 2: GIỎI (8.0 - 8.99) -> Pháo hoa kép 2 bên rực rỡ
+        resCard.classList.add("result-tier-high");
+        trophy.className = "w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white flex items-center justify-center text-3xl shadow-lg trophy-anim flex-shrink-0";
+        trophy.innerHTML = `<i class="fa-solid fa-trophy"></i>`;
+        badge.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-emerald-100 text-emerald-800";
+        badge.innerHTML = `<i class="fa-solid fa-star"></i> THÀNH TÍCH GIỎI`;
+
+        if (typeof confetti === "function") {
+          confetti({ particleCount: 90, angle: 60, spread: 70, origin: { x: 0.1, y: 0.65 } });
+          setTimeout(() => {
+            confetti({ particleCount: 90, angle: 120, spread: 70, origin: { x: 0.9, y: 0.65 } });
+          }, 300);
+        }
+      } else if (scoreNum >= 6.5) {
+        // CẤP 3: KHÁ (6.5 - 7.99) -> Pháo giấy chúc mừng trung tâm
+        resCard.classList.add("result-tier-good");
+        trophy.className = "w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-blue-600 text-white flex items-center justify-center text-3xl shadow-md trophy-anim flex-shrink-0";
+        trophy.innerHTML = `<i class="fa-solid fa-medal"></i>`;
+        badge.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-indigo-100 text-indigo-800";
+        badge.innerHTML = `<i class="fa-solid fa-thumbs-up"></i> HOÀN THÀNH KHÁ TỐT`;
+
+        if (typeof confetti === "function") {
+          confetti({ particleCount: 65, spread: 75, origin: { y: 0.6 } });
+        }
+      } else if (scoreNum >= 5.0) {
+        // CẤP 4: ĐẠT YÊU CẦU (5.0 - 6.49) -> Hiệu ứng pháo nhẹ khích lệ
+        trophy.className = "w-16 h-16 rounded-2xl bg-gradient-to-br from-teal-500 to-cyan-600 text-white flex items-center justify-center text-3xl shadow-sm flex-shrink-0";
+        trophy.innerHTML = `<i class="fa-solid fa-award"></i>`;
+        badge.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-teal-100 text-teal-800";
+        badge.innerHTML = `<i class="fa-solid fa-circle-check"></i> ĐẠT YÊU CẦU`;
+
+        if (typeof confetti === "function") {
+          confetti({ particleCount: 30, spread: 55, origin: { y: 0.65 } });
+        }
+      } else {
+        // CẤP 5: CẦN CỐ GẮNG (< 5.0)
+        trophy.className = "w-16 h-16 rounded-2xl bg-gradient-to-br from-slate-500 to-slate-700 text-white flex items-center justify-center text-3xl shadow-sm flex-shrink-0";
+        trophy.innerHTML = `<i class="fa-solid fa-book-open-reader"></i>`;
+        badge.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-amber-100 text-amber-800";
+        badge.innerHTML = `<i class="fa-solid fa-bolt"></i> CỐ GẮNG ÔN LẠI CÁC CÂU SAI NHÉ`;
+      }
+    }
+
+    function replayCelebrationEffect() {
+      applyScoreTierVisualsAndFireworks(activeExamData.lastScoreNum || 0);
+    }
+
+    /* ---------------------------------------------------------
+       I. NỘP BÀI, ẨN TOÀN BỘ THANH PHÍA TRÊN & HIỂN THỊ BÀI MẤY ĐÚNG MẤY CÂU SAI MẤY CÂU
+       --------------------------------------------------------- */
+    function promptSubmitConfirm() {
+      if (activeExamData.isSubmitted) return;
+
+      const c1 = Object.keys(activeExamData.userAnswers.part1).length;
+      let c2 = 0;
+      activeExamData.part2.forEach(q => {
+        const arr = activeExamData.userAnswers.part2[q.id];
+        if (arr && arr.every(v => v !== null && v !== undefined)) c2++;
+      });
+      const c3 = Object.keys(activeExamData.userAnswers.part3).length;
+      const totalDone = c1 + c2 + c3;
+      const unDone = TOTAL_QUESTIONS_COUNT - totalDone;
+
+      document.getElementById("confirmModalDetail").innerHTML = `
+        Đã làm: <strong>${totalDone}/${TOTAL_QUESTIONS_COUNT}</strong> câu • Chưa làm: <strong>${unDone}</strong> câu.<br>
+        Bạn xác nhận nộp bài ngay?
+      `;
+      document.getElementById("confirmModal").classList.remove("hidden");
+    }
+
+    function closeConfirmModal() {
+      document.getElementById("confirmModal").classList.add("hidden");
+    }
+
+    function executeSubmitExam(isAuto = false) {
+      closeConfirmModal();
+      if (activeExamData.isSubmitted) return;
+
+      activeExamData.isSubmitted = true;
+      activeExamData.endTime = new Date();
+      if (activeExamData.timerInterval) clearInterval(activeExamData.timerInterval);
+
+      // Ẩn toàn bộ thanh phía trên sau khi làm xong
+      document.getElementById("examTopHeader").classList.add("hidden");
+      document.getElementById("floatingBackTopBtn").classList.remove("hidden");
+
+      const topicStats = {
+        "Bài 1": { correct: 0, wrong: 0 },
+        "Bài 2": { correct: 0, wrong: 0 },
+        "Bài 3": { correct: 0, wrong: 0 },
+        "Bài 4": { correct: 0, wrong: 0 },
+        "Bài 5": { correct: 0, wrong: 0 },
+        "Bài 6": { correct: 0, wrong: 0 }
+      };
+
+      function recordTopic(topic, isCorrect) {
+        if (!topicStats[topic]) topicStats[topic] = { correct: 0, wrong: 0 };
+        if (isCorrect) topicStats[topic].correct++;
+        else topicStats[topic].wrong++;
+      }
+
+      let correctCount = 0;
+      let wrongCount = 0;
+      let skippedCount = 0;
+
+      // 1. Chấm Phần 1
+      activeExamData.part1.forEach(q => {
+        const userChoice = activeExamData.userAnswers.part1[q.id];
+        const isAnswered = Boolean(userChoice);
+        const isRight = userChoice === q.correctText;
+
+        const solEl = document.getElementById(`solution_${q.id}`);
+        const cardEl = document.getElementById(`qCard_${q.id}`);
+        const navBtn = document.getElementById(`navBtn_${q.id}`);
+
+        if (!isAnswered) {
+          skippedCount++;
+          recordTopic(q.topic, false);
+          cardEl.classList.add("border-amber-300", "bg-amber-50/20");
+          if (navBtn) navBtn.className = "nav-cell h-8 rounded-lg bg-rose-500 text-white text-xs font-mono font-black flex items-center justify-center";
+        } else if (isRight) {
+          correctCount++;
+          recordTopic(q.topic, true);
+          cardEl.classList.add("border-emerald-400", "bg-emerald-50/20");
+          if (navBtn) navBtn.className = "nav-cell h-8 rounded-lg bg-emerald-500 text-white text-xs font-mono font-black flex items-center justify-center";
+        } else {
+          wrongCount++;
+          recordTopic(q.topic, false);
+          cardEl.classList.add("border-rose-400", "bg-rose-50/20");
+          if (navBtn) navBtn.className = "nav-cell h-8 rounded-lg bg-rose-500 text-white text-xs font-mono font-black flex items-center justify-center";
+        }
+
+        solEl.className = "mt-4 p-4 rounded-2xl text-xs sm:text-sm leading-relaxed border-2 " + 
+          (isRight ? "bg-emerald-50 border-emerald-300 text-emerald-950" : "bg-rose-50 border-rose-300 text-rose-950");
+        solEl.innerHTML = `
+          <div class="font-bold flex items-center gap-2 mb-1">
+            <i class="fa-solid ${isRight ? 'fa-check text-emerald-600' : 'fa-xmark text-rose-600'}"></i>
+            <span>Đáp án đúng: <strong class="text-indigo-700 underline">${q.correctText}</strong></span>
+          </div>
+          <div class="text-xs text-slate-600">${q.exp || ''}</div>
+        `;
+        solEl.classList.remove("hidden");
+      });
+
+      // 2. Chấm Phần 2
+      activeExamData.part2.forEach(q => {
+        const uArr = activeExamData.userAnswers.part2[q.id] || [null, null, null, null];
+        const isFullyAnswered = uArr.every(v => v !== null && v !== undefined);
+
+        let subCorrect = 0;
+        q.items.forEach((it, idx) => {
+          if (uArr[idx] === it.isTrue) subCorrect++;
+        });
+
+        const isRight = subCorrect === 4;
+        const navBtn = document.getElementById(`navBtn_${q.id}`);
+
+        if (!isFullyAnswered) {
+          skippedCount++;
+          recordTopic(q.topic, false);
+          if (navBtn) navBtn.className = "nav-cell h-8 rounded-lg bg-rose-500 text-white text-xs font-mono font-black flex items-center justify-center";
+        } else if (isRight) {
+          correctCount++;
+          recordTopic(q.topic, true);
+          if (navBtn) navBtn.className = "nav-cell h-8 rounded-lg bg-emerald-500 text-white text-xs font-mono font-black flex items-center justify-center";
+        } else {
+          wrongCount++;
+          recordTopic(q.topic, false);
+          if (navBtn) navBtn.className = "nav-cell h-8 rounded-lg bg-rose-500 text-white text-xs font-mono font-black flex items-center justify-center";
+        }
+
+        const solEl = document.getElementById(`solution_${q.id}`);
+        const cardEl = document.getElementById(`qCard_${q.id}`);
+        cardEl.classList.add(isRight ? "border-emerald-400" : "border-rose-400");
+
+        const letters = ["a", "b", "c", "d"];
+        let detailTruth = q.items.map((it, idx) => `<strong>${letters[idx]})</strong> ${it.isTrue ? '<span class="text-teal-700 font-bold">ĐÚNG</span>' : '<span class="text-rose-700 font-bold">SAI</span>'}`).join(" • ");
+
+        solEl.className = "mt-4 p-4 rounded-2xl text-xs sm:text-sm leading-relaxed border-2 " +
+          (isRight ? "bg-emerald-50 border-emerald-300 text-emerald-950" : "bg-rose-50 border-rose-300 text-rose-950");
+        solEl.innerHTML = `
+          <div class="font-bold mb-1">Đáp án: ${detailTruth}</div>
+          <div class="text-xs text-slate-600">${q.exp || ''}</div>
+        `;
+        solEl.classList.remove("hidden");
+      });
+
+      // 3. Chấm Phần 3
+      activeExamData.part3.forEach(q => {
+        const userText = (activeExamData.userAnswers.part3[q.id] || "").trim().toLowerCase();
+        const isAnswered = Boolean(userText);
+        const isRight = q.accepted.some(acc => userText === acc.toLowerCase());
+
+        const solEl = document.getElementById(`solution_${q.id}`);
+        const cardEl = document.getElementById(`qCard_${q.id}`);
+        const navBtn = document.getElementById(`navBtn_${q.id}`);
+
+        if (!isAnswered) {
+          skippedCount++;
+          recordTopic(q.topic, false);
+          cardEl.classList.add("border-amber-300");
+          if (navBtn) navBtn.className = "nav-cell h-8 rounded-lg bg-rose-500 text-white text-xs font-mono font-black flex items-center justify-center";
+        } else if (isRight) {
+          correctCount++;
+          recordTopic(q.topic, true);
+          cardEl.classList.add("border-emerald-400");
+          if (navBtn) navBtn.className = "nav-cell h-8 rounded-lg bg-emerald-500 text-white text-xs font-mono font-black flex items-center justify-center";
+        } else {
+          wrongCount++;
+          recordTopic(q.topic, false);
+          cardEl.classList.add("border-rose-400");
+          if (navBtn) navBtn.className = "nav-cell h-8 rounded-lg bg-rose-500 text-white text-xs font-mono font-black flex items-center justify-center";
+        }
+
+        solEl.className = "mt-4 p-4 rounded-2xl text-xs sm:text-sm leading-relaxed border-2 " +
+          (isRight ? "bg-emerald-50 border-emerald-300 text-emerald-950" : "bg-rose-50 border-rose-300 text-rose-950");
+        solEl.innerHTML = `
+          <div class="font-bold mb-1">Đáp án đúng: <strong class="text-amber-800">${q.accepted[0]}</strong></div>
+          <div class="text-xs text-slate-600">${q.exp || ''}</div>
+        `;
+        solEl.classList.remove("hidden");
+      });
+
+      const scoreNum = Number(((correctCount / TOTAL_QUESTIONS_COUNT) * 10).toFixed(2));
+      activeExamData.lastScoreNum = scoreNum;
+
+      document.getElementById("resStudentName").innerText = `Thí sinh: ${activeExamData.studentName}`;
+      const timeSpentSec = (150 * 60) - activeExamData.remainingSeconds;
+      const spentMin = Math.floor(timeSpentSec / 60);
+      const spentSec = timeSpentSec % 60;
+      document.getElementById("resTimeUsed").innerText = `Thời gian: ${spentMin} phút ${spentSec} giây`;
+      document.getElementById("resCorrectCount").innerText = correctCount;
+      document.getElementById("resWrongCount").innerText = wrongCount;
+      document.getElementById("resUnansweredCount").innerText = skippedCount;
+
+      // CHỈ HIỂN THỊ BÀI MẤY: ĐÚNG MẤY CÂU - SAI MẤY CÂU
+      const topicGrid = document.getElementById("topicBreakdownGrid");
+      topicGrid.innerHTML = Object.entries(topicStats).map(([baiName, st]) => `
+        <div class="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 flex items-center justify-between stat-card-anim">
+          <span class="text-sm font-black text-slate-900">${baiName}</span>
+          <div class="flex items-center gap-2.5 text-xs font-extrabold">
+            <span class="px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-700">Đúng: ${st.correct} câu</span>
+            <span class="px-2.5 py-1 rounded-lg bg-rose-100 text-rose-700">Sai: ${st.wrong} câu</span>
+          </div>
+        </div>
+      `).join("");
+
+      document.getElementById("resultCard").classList.remove("hidden");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+
+      // Chạy hiệu ứng nhảy điểm số + pháo hoa theo cấp điểm
+      animateScoreCounter(scoreNum);
+      applyScoreTierVisualsAndFireworks(scoreNum);
+
+      saveExamToHistory({
+        name: activeExamData.studentName,
+        date: new Date().toLocaleString("vi-VN"),
+        score: scoreNum.toFixed(2),
+        correct: correctCount,
+        total: TOTAL_QUESTIONS_COUNT
+      });
+      loadExamHistoryUI();
+    }
+
+    /* ---------------------------------------------------------
+       J. LỊCH SỬ LÀM BÀI
+       --------------------------------------------------------- */
+    function saveExamToHistory(record) {
+      try {
+        const old = JSON.parse(localStorage.getItem("bio10_history_list") || "[]");
+        old.unshift(record);
+        if (old.length > 20) old.pop();
+        localStorage.setItem("bio10_history_list", JSON.stringify(old));
+      } catch (e) {}
+    }
+
+    function loadExamHistoryUI() {
+      const container = document.getElementById("historyListContainer");
+      if (!container) return;
+
+      let list = [];
+      try {
+        list = JSON.parse(localStorage.getItem("bio10_history_list") || "[]");
+      } catch (e) { list = []; }
+
+      if (list.length === 0) {
+        container.innerHTML = `<div class="text-center py-6 text-slate-400 text-xs">Chưa có lịch sử làm bài.</div>`;
+        return;
+      }
+
+      container.innerHTML = list.map((item) => `
+        <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs flex items-center justify-between gap-2 stat-card-anim">
+          <div class="min-w-0">
+            <div class="font-extrabold text-slate-900 truncate">${item.name}</div>
+            <div class="text-[10px] text-slate-400">${item.date}</div>
+          </div>
+          <div class="text-right flex-shrink-0">
+            <span class="text-sm font-black font-mono text-indigo-700">${item.score}đ</span>
+            <span class="text-[10px] block text-slate-400 font-bold">${item.correct}/${item.total || 150}</span>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function clearExamHistory() {
+      if (confirm("Xóa toàn bộ lịch sử làm bài?")) {
+        localStorage.removeItem("bio10_history_list");
+        loadExamHistoryUI();
+      }
+    }
+
+    function backToLobby() {
+      document.getElementById("resultCard").classList.add("hidden");
+      document.getElementById("floatingBackTopBtn").classList.add("hidden");
+      document.getElementById("examTopHeader").classList.remove("hidden");
+      document.getElementById("lobbyScreen").classList.remove("hidden");
+      loadExamHistoryUI();
+    }
+
+    function toggleSidebar() {
+      const sidebar = document.getElementById("sidebarNav");
+      const overlay = document.getElementById("drawerOverlay");
+      if (sidebar.classList.contains("translate-x-full")) {
+        sidebar.classList.remove("translate-x-full");
+        overlay.classList.remove("hidden");
+      } else {
+        sidebar.classList.add("translate-x-full");
+        overlay.classList.add("hidden");
+      }
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById("toastAlert");
+      const label = document.getElementById("toastAlertMessage");
+      label.innerText = msg;
+      toast.classList.remove("hidden");
+      setTimeout(() => toast.classList.add("hidden"), 3200);
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {
+      loadPersistentImages();
+      loadExamHistoryUI();
+    });
+  </script>
+</body>
+</html>
